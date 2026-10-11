@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from app.core.aftereffects import (SIGNS, TRIGGER_SPECS, decay, decay_integral_factor,
                                   finite, integrate_decay, neg, pos, triggers)
 from app.core.ontology import FEATURE_BY_KEY, FEATURE_KEYS
+from app.core.homeostasis import energy_modifier, evaluate_energy, evaluate_needs
 
 if TYPE_CHECKING:
     from app.schemas.models import ActionInput, PersonModel, TransientState
@@ -40,12 +41,12 @@ def validated_inputs(model, state, action=None):
     return model, state, validate(ActionInput, action) if action is not None else None
 
 
-def effective_parameters(key, parameters, model, state):
+def effective_parameters(key, parameters, model, state, include_energy=True):
     effective = parameters.model_dump(exclude={"family"})
-    if key == "mental_effort" and parameters.family == "cost":
-        effective["cost_sensitivity"] *= 1 + model.transient.low_mental_energy_cognitive_multiplier * (1 - state.mental_energy)
-    elif key == "physical_effort" and parameters.family == "cost":
-        effective["cost_sensitivity"] *= 1 + model.transient.low_physical_energy_physical_multiplier * (1 - state.physical_energy)
+    if key == "mental_effort" and parameters.family == "cost" and include_energy:
+        effective["cost_sensitivity"] *= energy_modifier(state.mental_energy, model.transient.low_mental_energy_cognitive_multiplier)
+    elif key == "physical_effort" and parameters.family == "cost" and include_energy:
+        effective["cost_sensitivity"] *= energy_modifier(state.physical_energy, model.transient.low_physical_energy_physical_multiplier)
     elif parameters.family == "reward_overload":
         effective["overload_sensitivity"] *= 1 + model.transient.stress_overload_multiplier * state.acute_stress
     elif parameters.family == "asymmetric_signed":
@@ -78,7 +79,7 @@ class Graph:
         self.edges = []
 
     def add(self, identifier, label, kind, value, definition, inputs=None, parameters=None, formula="value", sources=(), note=None):
-        node = {"id": identifier, "label": label, "kind": kind, "value": finite(value, label),
+        node = {"id": identifier, "label": label, "kind": kind, "value": finite(value, label) if value is not None else None,
                 "definition": definition, "inputs": inputs or {}, "parameters": parameters or {}, "formula": formula}
         if note is not None:
             node["note"] = note
@@ -108,7 +109,7 @@ def evaluate(action: "ActionInput", model: "PersonModel", state: "TransientState
     for key in FEATURE_KEYS:
         definition = FEATURE_BY_KEY[key]
         x, params = action.features[key], model.features[key]
-        effective = effective_parameters(key, params, model, state)
+        effective = effective_parameters(key, params, model, state, include_energy=False)
         raw_id = graph.add(f"feature:{key}", definition["display_name"], "feature_input", x, definition["definition"],
                            note=(action.feature_notes or {}).get(key))
         param_ids = {}
@@ -116,11 +117,7 @@ def evaluate(action: "ActionInput", model: "PersonModel", state: "TransientState
             param_ids[name] = graph.add(f"parameter:{key}:{name}", f"{definition['display_name']}: {name}", "parameter", value,
                                        "Base Person Model response parameter.")
         modified = None
-        if key == "mental_effort" and params.family == "cost":
-            modified = ("cost_sensitivity", "low_mental_energy_cognitive_multiplier", "mental_energy", 1 - state.mental_energy, "1 - mental_energy")
-        elif key == "physical_effort" and params.family == "cost":
-            modified = ("cost_sensitivity", "low_physical_energy_physical_multiplier", "physical_energy", 1 - state.physical_energy, "1 - physical_energy")
-        elif params.family == "reward_overload":
+        if params.family == "reward_overload":
             modified = ("overload_sensitivity", "stress_overload_multiplier", "acute_stress", state.acute_stress, "acute_stress")
         elif params.family == "asymmetric_signed":
             modified = ("negative_sensitivity", "stress_negative_multiplier", "acute_stress", state.acute_stress, "acute_stress")
@@ -271,14 +268,18 @@ def evaluate(action: "ActionInput", model: "PersonModel", state: "TransientState
         raise ValueError("Aftereffect utility exceeds finite double-precision arithmetic") from None
     graph.add("aftereffect_utility", "Aftereffect utility", "aggregation", aftereffect, "Sum of integrated utility from all eight post-action effects.",
               {t["name"]: t["integrated_utility"] for t in aftereffect_traces}, formula="sum(integrated_aftereffect_utility_i)", sources=integral_ids)
+    needs_utility, need_traces = evaluate_needs(model, state, trigger_features, graph)
+    energy_utility, energy_traces = evaluate_energy(model, state, feature_traces, graph)
     try:
-        gross = finite(math.fsum([during, one_time, aftereffect]), "Gross utility")
+        base_gross = finite(math.fsum([during, one_time, aftereffect]), "Base gross utility")
+        gross = finite(math.fsum([base_gross, needs_utility, energy_utility]), "Gross utility")
     except OverflowError:
         raise ValueError("Gross utility exceeds finite double-precision arithmetic") from None
     graph.add("gross_utility", "Gross utility", "aggregation", gross, "Utility before resource costs.",
-              {"during_utility": during, "one_time_utility": one_time, "aftereffect_utility": aftereffect},
-              formula="during_utility + one_time_utility + aftereffect_utility",
-              sources=["during_utility", "one_time_utility", "aftereffect_utility"])
+              {"during_utility": during, "one_time_utility": one_time, "aftereffect_utility": aftereffect,
+               "needs_utility": needs_utility, "energy_utility": energy_utility},
+              formula="during_utility + one_time_utility + aftereffect_utility + needs_utility + energy_utility",
+              sources=["during_utility", "one_time_utility", "aftereffect_utility", "needs_utility", "energy_utility"])
     for name, value in model.resources.model_dump().items():
         graph.add(f"resource_parameter:{name}", name.replace("_", " "), "parameter", value,
                   "Utility per hour of time." if name == "time_value" else "Utility per currency unit; all money uses one consistent caller-declared currency.")
@@ -295,9 +296,16 @@ def evaluate(action: "ActionInput", model: "PersonModel", state: "TransientState
               ["net_money_cost", "resource_parameter:money_value"])
     graph.add("resource_cost", "Resource utility cost", "aggregation", resource_cost, "Sum of time and money utility costs.",
               {"time_cost": time_cost, "money_cost": money_cost}, formula="time_cost + money_cost", sources=["time_cost", "money_cost"])
-    total = finite(gross - resource_cost, "Total utility")
+    base_utility = finite(base_gross - resource_cost, "Base utility")
+    graph.add("base_utility", "Base utility", "aggregation", base_utility,
+              "Existing intrinsic and aftereffect utility less resources; excludes energy and dynamic needs.",
+              {"during_utility": during, "one_time_utility": one_time, "aftereffect_utility": aftereffect, "resource_cost": resource_cost},
+              formula="during_utility + one_time_utility + aftereffect_utility - resource_cost",
+              sources=["during_utility", "one_time_utility", "aftereffect_utility", "resource_cost"])
+    total = finite(math.fsum([base_utility, needs_utility, energy_utility]), "Total utility")
     graph.add("total_utility", "Total utility", "total", total, "Ranking score after subtracting time and money utility costs.",
-              {"gross_utility": gross, "resource_cost": resource_cost}, formula="gross_utility - resource_cost", sources=["gross_utility", "resource_cost"])
+              {"base_utility": base_utility, "needs_utility": needs_utility, "energy_utility": energy_utility},
+              formula="base_utility + needs_utility + energy_utility", sources=["base_utility", "needs_utility", "energy_utility"])
     before_time_cost = finite(gross - money_cost, "Utility excluding time cost")
     graph.add("utility_excluding_time_cost", "Utility excluding time cost", "aggregation", before_time_cost,
               "Gross utility less money cost; excludes time opportunity cost for the hourly diagnostic.",
@@ -309,6 +317,8 @@ def evaluate(action: "ActionInput", model: "PersonModel", state: "TransientState
     return {"during_rate": during_rate, "during_utility": during, "one_time_utility": one_time, "aftereffect_utility": aftereffect,
             "gross_utility": gross, "time_cost": time_cost, "money_cost": money_cost, "resource_cost": resource_cost,
             "total_utility": total, "utility_per_action_hour": per_hour,
+            "base_utility": base_utility, "needs_utility": needs_utility, "energy_utility": energy_utility,
+            "need_traces": need_traces, "energy_traces": energy_traces,
             "feature_traces": feature_traces, "aftereffect_traces": aftereffect_traces, "graph": graph.dump()}
 
 

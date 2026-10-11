@@ -18,6 +18,23 @@ def normalize_model(saved):
     converted = "resources" not in model
     if converted:
         model["resources"] = {"time_value": 0, "money_value": 0}
+    if "homeostasis" not in model:
+        from app.schemas.models import HomeostaticParameters
+        model["homeostasis"] = HomeostaticParameters().model_dump(mode="json")
+        converted = True
+    homeostasis = model.get("homeostasis")
+    if isinstance(homeostasis, dict) and isinstance(homeostasis.get("needs"), dict):
+        for parameters in homeostasis["needs"].values():
+            if isinstance(parameters, dict) and "rate" in parameters:
+                del parameters["rate"]
+                converted = True
+    transient = model.get("transient")
+    if isinstance(transient, dict):
+        for key in ("low_mental_energy_cognitive_multiplier", "low_physical_energy_physical_multiplier"):
+            value = transient.get(key)
+            if isinstance(value, (int, float)) and value > 64:
+                transient[key] = 64
+                converted = True
     features = model.get("features")
     if not isinstance(features, dict):
         return model, converted

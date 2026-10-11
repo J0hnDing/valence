@@ -114,3 +114,16 @@ Implemented the approved Valence ontology revision with 19 independent features.
 ### Limitations
 
 Earlier combined encodings cannot recover simultaneous effort/pleasure, mental rest, curiosity engagement or independent structure/uncertainty precisely; converted inputs and parameters require review. Historical v1-v4 evaluations retain their saved traces and require the original engine for exact reproduction. Atlas synchronization is deferred at user request.
+
+## 2026-10-11 00:04 — Need!!!!
+
+- Category: feature
+- Area: 1
+
+### Summary
+
+Implemented approved dynamic needs and current-state homeostasis in engine v6. Added strict bounded per-person need parameters and partial satisfaction state, deterministic mappings from the existing 19 features, quadratic deprivation/overload values and once-per-action need contributions with zero-exposure filtering. Replaced legacy energy behavior with the bounded modifier, preserving stress behavior and separating base, needs and energy totals, traces and graph nodes. Manual daily-state saving remains; evaluation never evolves state. Added explicit Unknown/Provided state controls, editable need parameters, read-only legacy projections, immutable historical snapshots and complete documentation. Validation: 259 backend tests, 50 frontend tests, TypeScript/production build and desktop/mobile live UI checks passed.
+
+### Limitations
+
+Need parameters are uncalibrated engineering defaults. Hunger/sleep, accumulation, recovery, relationship-specific state, learned parameters and richer inference are deferred in TODO-003. Historical v1-v5 evaluations remain readable and require their original engine for reproduction.

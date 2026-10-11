@@ -515,9 +515,10 @@ Keep transient state separate from the persistent Person Model.
 Support exactly:
 
 ```text
-mental_energy: [0,1]
-physical_energy: [0,1]
+mental_energy: [0,1] or null/omitted
+physical_energy: [0,1] or null/omitted
 acute_stress: [0,1]
+need_satisfaction: partial object of the five canonical needs, values in [0,1]
 date
 notes?
 ```
@@ -525,16 +526,17 @@ notes?
 Defaults:
 
 ```text
-mental_energy = 0.5
-physical_energy = 0.5
+mental_energy = null
+physical_energy = null
 acute_stress = 0
+need_satisfaction = {}
 ```
 
 Person Model global parameters:
 
 ```text
-low_mental_energy_cognitive_multiplier >= 0
-low_physical_energy_physical_multiplier >= 0
+low_mental_energy_cognitive_multiplier in [0,64] (mental alpha)
+low_physical_energy_physical_multiplier in [0,64] (physical alpha)
 stress_overload_multiplier >= 0
 stress_negative_multiplier >= 0
 ```
@@ -542,8 +544,8 @@ stress_negative_multiplier >= 0
 Defaults:
 
 ```text
-0.5
-0.5
+1
+1
 0.25
 0.25
 ```
@@ -551,23 +553,13 @@ Defaults:
 Effective cognitive cost:
 
 ```text
-base_cost *
-(
-  1 +
-  low_mental_energy_cognitive_multiplier *
-  (1 - mental_energy)
-)
+base_cost * clip(1 + low_mental_energy_cognitive_multiplier * (0.7 - mental_energy), 0.5, 2)
 ```
 
 Effective physical cost:
 
 ```text
-base_cost *
-(
-  1 +
-  low_physical_energy_physical_multiplier *
-  (1 - physical_energy)
-)
+base_cost * clip(1 + low_physical_energy_physical_multiplier * (0.7 - physical_energy), 0.5, 2)
 ```
 
 Effective overload sensitivity for:
@@ -594,7 +586,9 @@ base_negative_sensitivity *
 )
 ```
 
-Do not add more transient variables in v1.
+Unknown energy uses modifier 1. Record the difference from original integrated effort cost as `energy_utility`, keeping feature traces as base contributions. Do not modify rest, pleasure, need-scoring inputs or aftereffects with energy.
+
+Engine v7 scores five dynamic needs from the supplied current state: physical activity, mental stimulation, social interaction, close connection, and goal progression. Store optimal bounds and sensitivity in `PersonModel.homeostasis`; store the caller-provided partial current satisfaction values in transient state. Missing satisfaction disables that need. Current pressure is squared normalized deprivation minus squared normalized overload. Each need contributes `sensitivity * current_pressure * associated_action_feature_value` once per action, ignoring ongoing inputs at zero exposure. The action-feature scoring inputs do not estimate satisfaction impacts. Impacts, satisfaction rates, recovery, accumulation and derivation of new state are the caller's responsibility. No predicted satisfaction or before/after value is calculated or returned. Manual daily-state saving and evaluation snapshots remain supported; evaluation never applies state changes. See [HOMEOSTASIS.md](HOMEOSTASIS.md) for final schemas, bounds, equations, defaults and ownership.
 
 ---
 
@@ -843,11 +837,13 @@ fatigue:
 For action `a`:
 
 ```text
-gross_utility = during_utility + one_time_utility + aftereffect_utility
+base_gross = during_utility + one_time_utility + aftereffect_utility
+gross_utility = base_gross + needs_utility + energy_utility
 time_cost = resources.time_value * duration_hours
 money_cost = resources.money_value * net_money_cost
 resource_cost = time_cost + money_cost
-total_utility = gross_utility - resource_cost
+base_utility = base_gross - resource_cost
+total_utility = base_utility + needs_utility + energy_utility
 utility_per_action_hour = (gross_utility - money_cost) / duration_hours
 ```
 
@@ -862,6 +858,11 @@ gross_utility
 time_cost
 money_cost
 resource_cost
+base_utility
+needs_utility
+energy_utility
+need_traces
+energy_traces
 total_utility
 utility_per_action_hour
 ```
@@ -946,7 +947,7 @@ Legacy 15-, 16- and 17-feature records are converted to the current 19-feature s
 
 Saving an edited action stores the current shape. Legacy model versions remain immutable; compatibility copies carry forward effort and physical-pleasure response parameters, while new mental-rest and curiosity responses use engineering defaults. Structure and uncertainty preferences derive from the old combined directional preference and retain the same documented limitations. Earlier models receive zero resource coefficients in the read-only compatibility view. Existing SQLite action tables receive an additive non-null `net_money_cost` column defaulting to zero and the persistence needed for optional feature exposures.
 
-Historical v1/v2/v3/v4 snapshots and traces remain unchanged with their original semantics. Reproduction requires the original engine version; engine v5 reproduces only v5 snapshots. New evaluations of converted older inputs use v5 semantics and may differ from saved historical totals. Changing current actions, exposure overrides or model coefficients must not affect saved evaluations. Atlas schema synchronization is deferred while the Valence schema is being refined.
+Historical v1-v6 snapshots and traces remain unchanged with their original semantics. Reproduction requires the original engine version; engine v7 reproduces only v7 snapshots. New evaluations of converted older inputs use v7 semantics and may differ from saved historical totals. Read-only model projections add default homeostatic parameters and retain saved energy strengths up to the new bound of 64; larger legacy values are capped and flagged for review. Obsolete v6 satisfaction rates are stripped only from the read-only model projection; original v6 models and prediction traces remain historical data. Current model requests reject rates. Saved states with numeric energy remain explicit inputs; missing need satisfaction is neutral. Changing current actions, exposure overrides, state or model coefficients must not affect saved evaluations. Atlas schema synchronization is deferred while the Valence schema is being refined.
 
 Every evaluation must reference:
 - exact Person Model version;

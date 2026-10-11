@@ -50,7 +50,7 @@ def test_costs_subtract_at_end_hourly_metric_excludes_only_time_cost():
     assert nodes["time_cost"]["value"] == 6
     assert nodes["money_cost"]["value"] == 8
     assert nodes["resource_cost"]["value"] == 14
-    assert nodes["total_utility"]["formula"] == "gross_utility - resource_cost"
+    assert nodes["total_utility"]["formula"] == "base_utility + needs_utility + energy_utility"
     incoming = {edge["source"] for edge in result["graph"]["edges"] if edge["target"] == "utility_per_action_hour"}
     assert incoming == {"utility_excluding_time_cost", "duration_hours"}
 
@@ -149,7 +149,7 @@ def test_api_resource_ranking_snapshot_and_reproduction(client):
     cheap = client.post("/api/actions", json=encoded(60, 0, competence_mastery=1, goal_progress=.8).model_dump()).json()
     request = {"person_id": person["id"], "model_version_id": version["id"], "action_ids": [expensive["id"], cheap["id"]], "state": {}, "horizon_hours": 0}
     evaluation = client.post("/api/evaluations", json=request).json()
-    assert evaluation["engine_version"] == "5"
+    assert evaluation["engine_version"] == "7"
     assert [r["action_id"] for r in evaluation["results"]] == [cheap["id"], expensive["id"]]
     assert [r["total_utility"] for r in evaluation["results"]] == [11, 10]
     assert evaluation["results"][1]["action_snapshot"]["net_money_cost"] == 4

@@ -36,12 +36,16 @@ def counts(app):
 
 def leaf_parameters(model):
     result = {}
-    for group, values in model.items():
-        for key, value in values.items():
-            if isinstance(value, dict):
-                result.update({f"{group}.{key}.{field}": number for field, number in value.items() if field != "family"})
+    def visit(value, prefix=""):
+        for key, member in value.items():
+            if key == "family":
+                continue
+            path = f"{prefix}.{key}" if prefix else key
+            if isinstance(member, dict):
+                visit(member, path)
             else:
-                result[f"{group}.{key}"] = value
+                result[path] = member
+    visit(model)
     return result
 
 
@@ -66,7 +70,7 @@ def test_flat_schema_is_short_friendly_likert_without_calibration_fields(client)
         assert len(weights) >= 1
         assert set(weights) <= set(QUESTION_BY_ID)
     baseline = leaf_parameters(default_model().model_dump(mode="json"))
-    assert set(PARAMETER_SIGNALS) == {path for path in baseline if not path.endswith("curvature") and not path.startswith("resources.")}
+    assert set(PARAMETER_SIGNALS) == {path for path in baseline if not path.endswith("curvature") and not path.startswith(("resources.", "homeostasis."))}
 
 
 def test_neutral_skipped_and_all_null_answers_preserve_the_default_model(client, app):

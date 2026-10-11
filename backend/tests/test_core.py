@@ -44,13 +44,15 @@ def test_default_model_is_complete_and_new_instances_are_independent():
     assert second.features["goal_progress"].positive_sensitivity == 1
 
 
-@pytest.mark.parametrize("mental,physical,cognitive,body", [(0, 0, -1.5, -1.5), (.5, .5, -1.25, -1.25), (1, 1, -1, -1), (0, 1, -1.5, -1)])
+@pytest.mark.parametrize("mental,physical,cognitive,body", [(0, 0, -1.7, -1.7), (.5, .5, -1.2, -1.2), (1, 1, -.7, -.7), (0, 1, -1.7, -.7)])
 def test_energy_modifiers_are_separate(mental, physical, cognitive, body):
     result = evaluate(action(mental_effort=1, physical_effort=1), default_model(),
                       TransientState(mental_energy=mental, physical_energy=physical))
-    rates = contributions(result)
-    assert rates["mental_effort"] == cognitive
-    assert rates["physical_effort"] == body
+    adjusted = {trace["feature_key"]: trace["adjusted_contribution"] for trace in result["energy_traces"]}
+    assert adjusted["mental_effort"] == pytest.approx(cognitive)
+    assert adjusted["physical_effort"] == pytest.approx(body)
+    assert contributions(result)["mental_effort"] == -1
+    assert contributions(result)["physical_effort"] == -1
 
 
 def test_stress_modifies_only_overload_and_negative_signed_sensitivity():
@@ -61,7 +63,7 @@ def test_stress_modifies_only_overload_and_negative_signed_sensitivity():
     assert rates["goal_progress"] == .4
     assert rates["stimulation_novelty"] == pytest.approx(.8 - .6 * 1.25)
     assert rates["social_exposure"] == pytest.approx(.6 - .8 * 1.25)
-    assert rates["mental_effort"] == -1.25
+    assert rates["mental_effort"] == -1
     assert rates["learning_gain"] == 1
 
 
@@ -118,7 +120,7 @@ def test_duration_integrates_rates_and_total_contains_all_signed_effects():
     expected_after = sum(trace["sign"] * trace["sensitivity"] * trace["trigger"] * trace["half_life_hours"] / math.log(2)
                          * (1 - 2 ** (-12 / trace["half_life_hours"])) for trace in result["aftereffect_traces"])
     assert result["aftereffect_utility"] == pytest.approx(expected_after)
-    assert result["total_utility"] == pytest.approx(result["during_utility"] + .8 + expected_after)
+    assert result["total_utility"] == pytest.approx(result["during_utility"] + .8 + expected_after + result["energy_utility"])
     assert result["utility_per_action_hour"] == pytest.approx(result["total_utility"] / 2)
     assert {t["name"]: t["sign"] for t in result["aftereffect_traces"]} == {
         "accomplishment": 1, "pride_ego": 1, "relief": 1, "inspiration": 1,
@@ -160,7 +162,7 @@ def test_complete_graph_is_closed_unique_and_traces_match_numeric_nodes():
     assert len(nodes) == len(result["graph"]["nodes"])
     assert all(edge["source"] in nodes and edge["target"] in nodes for edge in result["graph"]["edges"])
     for node in nodes.values():
-        assert math.isfinite(node["value"])
+        assert node["value"] is None or math.isfinite(node["value"])
         assert isinstance(node["inputs"], dict)
         assert isinstance(node["parameters"], dict)
         assert node["definition"] and node["formula"]

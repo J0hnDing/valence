@@ -16,7 +16,7 @@ export function App() {
   const [creationDraft, setCreationDraft] = useState<PersonCreationDraft>();
   const [page, setPage] = useState<Page>('Compare');
   const [ontology, setOntology] = useState<Feature[]>([]); const [persons, setPersons] = useState<Person[]>([]); const [actions, setActions] = useState<Action[]>([]);
-  const [personId, setPersonId] = useState(''); const [state, setState] = useState<State>({ mental_energy: 0.5, physical_energy: 0.5, acute_stress: 0, date: today(), notes: '' }); const [horizon, setHorizon] = useState(168);
+  const [personId, setPersonId] = useState(''); const [state, setState] = useState<State>({ mental_energy: null, physical_energy: null, need_satisfaction: {}, acute_stress: 0, date: today(), notes: '' }); const [horizon, setHorizon] = useState(168);
   const [evaluation, setEvaluation] = useState<Evaluation>(); const [actionId, setActionId] = useState<string>();
   const [loading, setLoading] = useState(true); const [error, setError] = useState(''); const [attempt, setAttempt] = useState(0);
   const [stateLoading, setStateLoading] = useState(false); const [stateError, setStateError] = useState(''); const [stateAttempt, setStateAttempt] = useState(0);
@@ -50,7 +50,7 @@ export function App() {
     return () => { active = false; };
   }, [personId, modelAttempt]);
   function inspect(evaluation: Evaluation, actionId?: string) { setEvaluation(evaluation); setActionId(actionId); setPage('Evaluation'); }
-  function personChanged(id: string) { setPersonId(id); setState(previous => ({ mental_energy: 0.5, physical_energy: 0.5, acute_stress: 0, date: previous.date, notes: '' })); }
+  function personChanged(id: string) { setPersonId(id); setState(previous => ({ mental_energy: null, physical_energy: null, need_satisfaction: {}, acute_stress: 0, date: previous.date, notes: '' })); }
   function personCreated(person: Person) { setPersons(previous => [...previous, person]); personChanged(person.id); }
   function personUpdated(person: Person) { setPersons(previous => previous.map(item => item.id === person.id ? person : item)); }
   function personDeleted(id: string) { setPersons(previous => previous.filter(person => person.id !== id)); }

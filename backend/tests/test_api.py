@@ -18,7 +18,7 @@ from app.main import create_app
 
 def state():
     return {"mental_energy": 0.5, "physical_energy": 0.5, "acute_stress": 0,
-            "date": "2026-10-06", "notes": None}
+            "date": "2026-10-06", "notes": None, "need_satisfaction": {}}
 
 
 def action(title="Test action", **values):
@@ -256,12 +256,13 @@ def test_daily_state_is_separate_per_person_and_date(client):
     created = person(client)
     other = person(client)
     params = {"person_id": created["id"], "date": "2026-10-06"}
-    assert client.get("/api/daily-state", params=params).json() == state()
+    neutral = state() | {"mental_energy": None, "physical_energy": None}
+    assert client.get("/api/daily-state", params=params).json() == neutral
     updated = state() | {"mental_energy": 0.1, "notes": "Poor sleep"}
     assert client.put("/api/daily-state", json={"person_id": created["id"], "state": updated}).json() == updated
     assert client.get("/api/daily-state", params=params).json() == updated
-    assert client.get("/api/daily-state", params=params | {"person_id": other["id"]}).json() == state()
-    assert client.get("/api/daily-state", params=params | {"date": "2026-10-07"}).json()["mental_energy"] == 0.5
+    assert client.get("/api/daily-state", params=params | {"person_id": other["id"]}).json() == neutral
+    assert client.get("/api/daily-state", params=params | {"date": "2026-10-07"}).json()["mental_energy"] is None
 
 
 def test_action_crud_and_zero_duration(client):

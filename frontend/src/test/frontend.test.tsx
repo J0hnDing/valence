@@ -4,13 +4,14 @@ import { api } from '../api';
 import { ActionEditor, actionValid } from '../Actions';
 import { App } from '../App';
 import { ComparePage, Ranking } from '../Compare';
-import { ModelEditor } from '../PersonModel';
+import { currentStateValid, defaultHomeostasis, homeostasisValid } from '../homeostasis';
+import { ModelEditor, modelValid } from '../PersonModel';
 import { ComputationGraph, output } from '../Graph';
 import { EvaluationPage } from '../Evaluation';
 import { HistoryPage } from '../History';
 import { displayJson, number, NumericControl, today } from '../components';
 import fixtures from './fixtures.json';
-import type { Action, Evaluation, Feature, Model, ModelVersion, Person, Preview, State, TraceGraph } from '../types';
+import type { Action, Evaluation, Feature, Model, ModelVersion, Person, Preview, State, TraceGraph, NeedKey, HistoricalNeedParameters } from '../types';
 
 vi.mock('recharts', () => ({ ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>, LineChart: ({ children }: { children: React.ReactNode }) => <div>{children}</div>, CartesianGrid: () => null, Line: () => null, XAxis: () => null, YAxis: () => null, Tooltip: () => null }));
 vi.mock('@xyflow/react', () => ({
@@ -21,7 +22,7 @@ vi.mock('@xyflow/react', () => ({
 }));
 
 const ontology = fixtures.ontology as Feature[];
-const model = fixtures.model as Model;
+const model: Model = { ...fixtures.model as Model, homeostasis: defaultHomeostasis() };
 const action = { ...fixtures.action, id: 'action-one', title: 'Study ML', duration_minutes: 120 } as Action;
 const second = { ...action, id: 'action-two', title: 'Play tennis', duration_minutes: 90 };
 const person: Person = { id: 'person-one', name: 'DEMO Person', description: 'Engineering demonstration', created_at: '2026-10-06T12:00:00Z', updated_at: '2026-10-06T12:00:00Z' };
@@ -358,7 +359,7 @@ describe('Person Model editing', () => {
     const save = vi.spyOn(api, 'saveModel').mockResolvedValue({ ...version, version: 2 });
     const onSaved = vi.fn(); render(<ModelEditor personId={person.id} initial={version} ontology={ontology} state={state} horizon={168} onVersionSaved={onSaved} />);
     const parameterCount = Object.values(model.features).reduce((total, response) => total + Object.keys(response).filter(key => key !== 'family').length, 0)
-      + 2 + Object.keys(model.transient).length + Object.values(model.aftereffects).reduce((total, effect) => total + Object.keys(effect).length, 0);
+      + 2 + 16 + Object.keys(model.transient).length + Object.values(model.aftereffects).reduce((total, effect) => total + Object.keys(effect).length, 0);
     expect(screen.getAllByRole('spinbutton')).toHaveLength(parameterCount);
     expect(screen.queryByLabelText('Preference alignment · Positive sensitivity')).not.toBeInTheDocument();
     const curvature = screen.getByLabelText('Competence / mastery · Positive curvature');
@@ -545,4 +546,135 @@ describe('persistence workflows', () => {
     expect(saved).not.toHaveBeenCalled();
     await act(async () => {});
   });
+});
+
+
+describe('dynamic needs and optional current state', () => {
+  it('validates known values and treats missing energy and needs as unknown', () => {
+    expect(currentStateValid({ acute_stress: 0, date: state.date })).toBe(true);
+    expect(currentStateValid({ ...state, mental_energy: null, need_satisfaction: { physical_activity: 0 } })).toBe(true);
+    for (const bad of [-0.001, 1.001, NaN, Infinity]) {
+      expect(currentStateValid({ ...state, mental_energy: bad })).toBe(false);
+      expect(currentStateValid({ ...state, need_satisfaction: { physical_activity: bad } })).toBe(false);
+    }
+    expect(currentStateValid({ ...state, need_satisfaction: { unknown: 0.5 } } as State)).toBe(false);
+    const params = defaultHomeostasis();
+    expect(homeostasisValid(params)).toBe(true);
+    for (const [key, bad] of [['lower', 0], ['upper', 1], ['sensitivity', 64.001]] as const) {
+      expect(homeostasisValid({ ...params, needs: { ...params.needs, physical_activity: { ...params.needs.physical_activity, [key]: bad } } })).toBe(false);
+    }
+    expect(homeostasisValid({ ...params, needs: { ...params.needs, physical_activity: { ...params.needs.physical_activity, lower: 0.9 } } })).toBe(false);
+    expect(homeostasisValid({ ...params, mental_effort_weight: NaN })).toBe(false);
+    const obsolete = { ...params, needs: { ...params.needs, physical_activity: { ...params.needs.physical_activity, rate: 0.25 } } };
+    expect(homeostasisValid(obsolete)).toBe(false);
+    expect(modelValid({ ...model, homeostasis: obsolete })).toBe(false);
+    expect(modelValid({ ...model, transient: { ...model.transient, low_mental_energy_cognitive_multiplier: 65 } })).toBe(false);
+  });
+
+  it('requires an explicit value when enabling state, allows unknowns, saves manually, and leaves state unchanged after evaluation', async () => {
+    const initial: State = { acute_stress: 0, date: state.date, mental_energy: null, physical_energy: null, need_satisfaction: {} };
+    let current = initial;
+    const changed = vi.fn((value: State) => { current = value; });
+    const props = { persons: [person], personId: person.id, onPersonChanged: vi.fn(), onManagePerson: vi.fn(), versions: [version], selectedVersion: version, onVersionChanged: vi.fn(), modelLoading: false, modelError: '', onModelRetry: vi.fn(), actions: [action], state: initial, onStateChanged: changed, stateLoading: false, stateError: '', onStateRetry: vi.fn(), horizon: 168, onHorizonChanged: vi.fn(), onInspect: vi.fn() };
+    const evaluate = vi.spyOn(api, 'evaluate').mockResolvedValue(evaluation);
+    const save = vi.spyOn(api, 'saveState').mockResolvedValue(initial);
+    const { rerender } = render(<ComparePage {...props} />);
+    expect(screen.getByLabelText('Mental energy availability')).toHaveValue('unknown');
+    expect(screen.queryByLabelText('mental energy')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Select all' }));
+    expect(screen.getByRole('button', { name: 'Evaluate 1 action →' })).toBeEnabled();
+    fireEvent.change(screen.getByLabelText('Mental energy availability'), { target: { value: 'provided' } });
+    rerender(<ComparePage {...props} state={current} />);
+    expect(screen.getByLabelText('mental energy')).toHaveValue(null);
+    expect(screen.getByRole('button', { name: 'Evaluate 1 action →' })).toBeDisabled();
+    fireEvent.change(screen.getByLabelText('mental energy'), { target: { value: '0.12345' } });
+    rerender(<ComparePage {...props} state={current} />);
+    expect(screen.getByLabelText('mental energy')).toHaveValue(0.123);
+    fireEvent.change(screen.getByLabelText('Physical activity availability'), { target: { value: 'provided' } });
+    rerender(<ComparePage {...props} state={current} />);
+    fireEvent.change(screen.getByLabelText('Physical activity satisfaction'), { target: { value: '0.7' } });
+    rerender(<ComparePage {...props} state={current} />);
+    expect(screen.getByText(/Preferred band: 0.6–0.8 · Optimal/)).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: 'Save state' }));
+    await waitFor(() => expect(save).toHaveBeenCalledWith(person.id, current));
+    await screen.findByText(`Daily state saved for ${state.date}.`);
+    const callsBefore = changed.mock.calls.length;
+    fireEvent.click(screen.getByRole('button', { name: 'Evaluate 1 action →' }));
+    await waitFor(() => expect(evaluate).toHaveBeenCalledWith(person.id, [action.id], current, 168, version.id));
+    await screen.findByRole('heading', { name: 'Comparison result' });
+    expect(changed).toHaveBeenCalledTimes(callsBefore);
+    expect(save).toHaveBeenCalledOnce();
+    fireEvent.change(screen.getByLabelText('Physical activity availability'), { target: { value: 'unknown' } });
+    expect(current.need_satisfaction).toEqual({});
+    fireEvent.change(screen.getByLabelText('Mental energy availability'), { target: { value: 'unknown' } });
+    expect(current.mental_energy).toBeNull();
+  });
+
+  it('defaults legacy model parameters and validates bounds before saving the edited model', async () => {
+    vi.spyOn(api, 'preview').mockResolvedValue(preview);
+    const save = vi.spyOn(api, 'saveModel').mockResolvedValue(version);
+    render(<ModelEditor personId={person.id} initial={{ ...version, model: fixtures.model as Model }} ontology={ontology} state={{ ...state, mental_energy: null }} horizon={168} onVersionSaved={vi.fn()} />);
+    expect(screen.getByLabelText('Physical activity · Lower')).toHaveValue(0.6);
+    expect(screen.queryByLabelText('Physical activity · Rate')).not.toBeInTheDocument();
+    expect(screen.queryByText(/predicted =/)).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Mental stimulation · Mental effort weight')).toHaveValue(0.4);
+    fireEvent.change(screen.getByLabelText('Physical activity · Lower'), { target: { value: '0.9' } });
+    expect(screen.getAllByRole('button', { name: 'Save new version' })[0]).toBeDisabled();
+    expect(screen.getByText('Use 0 < lower ≤ upper < 1.')).toBeVisible();
+    fireEvent.change(screen.getByLabelText('Physical activity · Lower'), { target: { value: '0.5' } });
+    fireEvent.change(screen.getByLabelText('Mental stimulation · Mental effort weight'), { target: { value: '0.3' } });
+    expect(screen.getByText(/Learning gain weight: 0.7/)).toBeVisible();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Save new version' })[0]);
+    await waitFor(() => expect(save).toHaveBeenCalledOnce());
+    expect(save.mock.calls[0][1].homeostasis).toEqual({ ...defaultHomeostasis(), mental_effort_weight: 0.3, needs: { ...defaultHomeostasis().needs, physical_activity: { lower: 0.5, upper: 0.8, sensitivity: 1 } } });
+    expect((fixtures.model as Model).homeostasis).toBeUndefined();
+  });
+
+  it('shows recorded engine7 current-state pressure and action scoring without predicted state', () => {
+    const current: Evaluation = { ...evaluation, engine_version: '7', state: { ...state, mental_energy: null, need_satisfaction: { physical_activity: 0.3 } }, results: [{ ...evaluation.results[0], base_utility: 6.82, needs_utility: 0.321987, energy_utility: -0.2, gross_utility: 6.941987, total_utility: 6.941987, resource_cost: 0, one_time_utility: 0, time_cost: 0, money_cost: 0, need_traces: [{ need_key: 'physical_activity', available: true, current_satisfaction: 0.3, feature_value: 0.6, parameters: defaultHomeostasis().needs.physical_activity, deprivation: 0.5, overload: 0, pressure: 0.25, utility_contribution: 0.321987, formula: 'saved need formula' }, { need_key: 'social_interaction', available: false, current_satisfaction: null, feature_value: 0, parameters: defaultHomeostasis().needs.social_interaction, deprivation: null, overload: null, pressure: 0, utility_contribution: 0, formula: 'unknown contributes zero' }], energy_traces: [{ feature_key: 'mental_effort', energy: null, alpha: 1, modifier: 1, base_contribution: -1, adjusted_contribution: -1, utility_contribution: 0, formula: 'saved energy formula' }] }] };
+    const { unmount } = render(<Ranking evaluation={current} onInspect={vi.fn()} />);
+    expect(screen.getByRole('columnheader', { name: 'Base utility' })).toBeVisible();
+    expect(screen.getByRole('columnheader', { name: 'Needs' })).toBeVisible();
+    expect(screen.getByText('+0.322')).toBeVisible();
+    unmount();
+    const detail = render(<EvaluationPage evaluation={current} ontology={ontology} />);
+    expect(screen.getByText('Needs utility')).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: 'Feature, need, energy & aftereffect traces' }));
+    expect(screen.getByRole('heading', { name: 'Need contributions' })).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Energy contributions' })).toBeVisible();
+    expect(screen.getByText('saved need formula')).toBeVisible();
+    expect(screen.getByText('saved energy formula')).toBeVisible();
+    expect(screen.getByRole('columnheader', { name: 'Pressure' })).toBeVisible();
+    expect(screen.getByRole('columnheader', { name: 'Action-feature value' })).toBeVisible();
+    expect(screen.queryByRole('columnheader', { name: 'Predicted satisfaction' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'Impact' })).not.toBeInTheDocument();
+    expect(screen.getAllByText('Unknown').length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText(/Need utility = current-state pressure/)).toBeVisible();
+    detail.unmount();
+    render(<EvaluationPage evaluation={{ ...evaluation, engine_version: '5' }} ontology={ontology} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Feature & aftereffect traces' }));
+    expect(screen.queryByRole('heading', { name: 'Need contributions' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Needs utility')).not.toBeInTheDocument();
+  });
+
+  it('preserves historical engine6 prediction traces and model snapshots as read-only recorded data', () => {
+    const historical: Evaluation = { ...evaluation, engine_version: '6', model_snapshot: { ...model, homeostasis: { ...defaultHomeostasis(), needs: Object.fromEntries(Object.entries(defaultHomeostasis().needs).map(([key, params]) => [key, { ...params, rate: 0.25 }])) as Record<NeedKey, HistoricalNeedParameters> } }, results: [{ ...evaluation.results[0], base_utility: 6.82, needs_utility: 0.25, energy_utility: 0, need_traces: [{ need_key: 'physical_activity', available: true, current_satisfaction: 0.3, predicted_satisfaction: 0.45, impact: 0.6, parameters: { ...defaultHomeostasis().needs.physical_activity, rate: 0.25 }, value_before: -0.5, value_after: -0.25, utility_contribution: 0.25, formula: 'recorded engine6 need formula' }], energy_traces: [] }] };
+    const original = structuredClone(historical);
+    const ranking = render(<Ranking evaluation={historical} onInspect={vi.fn()} />);
+    expect(screen.getByText(/Historical engine 6:/)).toBeVisible();
+    expect(screen.getByRole('columnheader', { name: 'Needs' })).toBeVisible();
+    ranking.unmount();
+    const { container } = render(<EvaluationPage evaluation={historical} ontology={ontology} />);
+    expect(screen.getByText(/Historical engine 6: this evaluation scored needs from predicted satisfaction changes/)).toBeVisible();
+    expect(container.querySelector('pre')).toHaveTextContent('"rate": 0.25');
+    fireEvent.click(screen.getByRole('button', { name: 'Feature, need, energy & aftereffect traces' }));
+    expect(screen.getByRole('heading', { name: 'Historical need contributions' })).toBeVisible();
+    expect(screen.getByRole('columnheader', { name: 'Predicted satisfaction' })).toBeVisible();
+    expect(screen.getByRole('columnheader', { name: 'Impact' })).toBeVisible();
+    expect(screen.getByText('recorded engine6 need formula')).toBeVisible();
+    expect(screen.queryByRole('columnheader', { name: 'Pressure' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
+    expect(historical).toEqual(original);
+  });
+
 });

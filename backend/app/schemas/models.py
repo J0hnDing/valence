@@ -50,8 +50,8 @@ Response = Annotated[AsymmetricSigned | Cost | OrderPreference | Reward | Reward
 
 
 class TransientParameters(StrictModel):
-    low_mental_energy_cognitive_multiplier: NonNegative = .5
-    low_physical_energy_physical_multiplier: NonNegative = .5
+    low_mental_energy_cognitive_multiplier: Annotated[FiniteFloat, Field(ge=0, le=64)] = 1
+    low_physical_energy_physical_multiplier: Annotated[FiniteFloat, Field(ge=0, le=64)] = 1
     stress_overload_multiplier: NonNegative = .25
     stress_negative_multiplier: NonNegative = .25
 
@@ -65,6 +65,32 @@ class ResourceParameters(StrictModel):
     # Shared utility scale; money amounts use one caller-declared currency.
     time_value: NonNegative = 0
     money_value: NonNegative = 0
+
+
+NEED_KEYS = ("physical_activity", "mental_stimulation", "social_interaction",
+             "close_connection", "goal_progression")
+
+
+class NeedParameters(StrictModel):
+    lower: Annotated[FiniteFloat, Field(gt=0, lt=1)] = .6
+    upper: Annotated[FiniteFloat, Field(gt=0, lt=1)] = .8
+    sensitivity: Annotated[FiniteFloat, Field(ge=0, le=64)] = 1
+
+    @model_validator(mode="after")
+    def valid_interval(self):
+        if self.lower > self.upper:
+            raise ValueError("need lower must not exceed upper")
+        return self
+
+
+class HomeostaticParameters(StrictModel):
+    needs: dict[str, NeedParameters] = Field(default_factory=lambda: {key: NeedParameters() for key in NEED_KEYS})
+    mental_effort_weight: Unit = .4
+
+    @field_validator("needs")
+    @classmethod
+    def valid_needs(cls, value):
+        return exact_keys(value, NEED_KEYS, "homeostasis.needs")
 
 
 AFTEREFFECT_DEFAULTS = {
@@ -86,6 +112,7 @@ class PersonModel(StrictModel):
     transient: TransientParameters
     aftereffects: dict[str, AftereffectParameters]
     resources: ResourceParameters
+    homeostasis: HomeostaticParameters = Field(default_factory=HomeostaticParameters)
 
     @field_validator("features")
     @classmethod
@@ -145,11 +172,19 @@ class ActionInput(StrictModel):
 
 
 class TransientState(StrictModel):
-    mental_energy: Unit = .5
-    physical_energy: Unit = .5
+    mental_energy: Unit | None = None
+    physical_energy: Unit | None = None
     acute_stress: Unit = 0
+    need_satisfaction: dict[str, Unit] = Field(default_factory=dict)
     date: Date = Field(default_factory=Date.today)
     notes: str | None = None
+
+    @field_validator("need_satisfaction")
+    @classmethod
+    def valid_need_state(cls, value):
+        if set(value) - set(NEED_KEYS):
+            raise ValueError("need_satisfaction keys must be canonical need keys")
+        return value
 
 
 def default_model() -> PersonModel:

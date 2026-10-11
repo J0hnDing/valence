@@ -252,6 +252,12 @@ def initialize_from_quiz(answers):
     scores = {signal: _score(answers, weights) for signal, weights in SIGNALS.items()}
     defaulted = []
     for group, members in model.items():
+        if group == "homeostasis":
+            # This questionnaire supplies no evidence for dynamic need parameters.
+            defaulted.append("homeostasis.mental_effort_weight")
+            defaulted.extend(f"homeostasis.needs.{key}.{field}"
+                             for key, parameters in members["needs"].items() for field in parameters)
+            continue
         for key, parameters in members.items():
             fields = parameters if isinstance(parameters, dict) else {None: parameters}
             for field, baseline in fields.items():
@@ -275,7 +281,8 @@ def initialize_from_quiz(answers):
                     parameters[field] = value
     answered = sum(value is not None for value in answers.values())
     warnings = ["These are conservative starting estimates, not calibrated utility ratings. Review them as you learn what fits you.",
-                "Response curvatures remain at their defaults; agreement statements do not identify response shapes."]
+                "Response curvatures remain at their defaults; agreement statements do not identify response shapes.",
+                "Dynamic need parameters retain engineering defaults; this questionnaire does not calibrate them."]
     if answered < 12:
         warnings.append("With few answers, the estimates stay especially close to defaults.")
     return {"model": PersonModel.model_validate(model).model_dump(mode="json"), "warnings": warnings,

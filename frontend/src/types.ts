@@ -8,9 +8,14 @@ export interface Feature {
 export interface Person { id: string; name: string; description?: string | null; created_at: string; updated_at: string }
 export interface ActionInput { title: string; duration_minutes: number; net_money_cost: number; features: Record<string, number>; feature_notes: Record<string, string> | null; feature_duration_minutes?: Record<string, number> | null }
 export interface Action extends Omit<ActionInput, 'net_money_cost'> { net_money_cost?: number; id: string; created_at: string; updated_at: string; converted_from_legacy?: boolean }
-export interface State { mental_energy: number; physical_energy: number; acute_stress: number; date: string; notes?: string | null }
+export type NeedKey = 'physical_activity' | 'mental_stimulation' | 'social_interaction' | 'close_connection' | 'goal_progression';
+export interface NeedParameters { lower: number; upper: number; sensitivity: number }
+export interface HistoricalNeedParameters extends NeedParameters { rate: number }
+export interface Homeostasis { needs: Record<NeedKey, NeedParameters>; mental_effort_weight: number }
+export interface State { mental_energy?: number | null; physical_energy?: number | null; need_satisfaction?: Partial<Record<NeedKey, number>>; acute_stress: number; date: string; notes?: string | null }
 export type Response = { family: Family } & Record<string, number | Family>;
 export interface Model {
+  homeostasis?: Homeostasis;
   resources?: { time_value: number; money_value: number };
   features: Record<string, Response>;
   transient: Record<string, number>;
@@ -26,15 +31,20 @@ export interface AftereffectTrace { name: string; trigger: number; sensitivity: 
 export interface TraceNode { id: string; label: string; kind: string; value: unknown; definition: string; inputs: Record<string, unknown>; parameters: Record<string, unknown>; formula: string; note?: string | null }
 export interface TraceGraph { nodes: TraceNode[]; edges: { source: string; target: string }[] }
 export interface Result {
+  base_utility?: number; needs_utility?: number; energy_utility?: number;
+  need_traces?: (NeedTrace | HistoricalNeedTrace)[]; energy_traces?: EnergyTrace[];
   action_id: string; action_snapshot: Action; rank: number; during_rate: number; during_utility: number;
   aftereffect_utility: number; total_utility: number; utility_per_action_hour: number | null;
   one_time_utility?: number; time_cost?: number; money_cost?: number; resource_cost?: number; gross_utility?: number;
   feature_traces: FeatureTrace[]; aftereffect_traces: AftereffectTrace[]; graph: TraceGraph;
 }
 export interface Evaluation {
-  engine_version?: '1' | '2' | '3' | '4' | '5';
+  engine_version?: '1' | '2' | '3' | '4' | '5' | '6' | '7';
   id: string; person_id: string; person_name: string; model_version_id: string; model_version: number;
-  model_snapshot: Model; state: State; horizon_hours: number; created_at: string; results: Result[];
+  model_snapshot: Model | (Omit<Model, 'homeostasis'> & { homeostasis: { needs: Record<NeedKey, HistoricalNeedParameters>; mental_effort_weight: number } }); state: State; horizon_hours: number; created_at: string; results: Result[];
 }
+export interface NeedTrace { need_key: NeedKey; available: boolean; current_satisfaction: number | null; feature_value: number; parameters: NeedParameters; deprivation: number | null; overload: number | null; pressure: number; utility_contribution: number; formula: string }
+export interface HistoricalNeedTrace { need_key: NeedKey; available: boolean; current_satisfaction: number | null; predicted_satisfaction: number | null; impact: number; parameters: HistoricalNeedParameters; value_before: number | null; value_after: number | null; utility_contribution: number; formula: string }
+export interface EnergyTrace { feature_key: string; energy: number | null; alpha: number; modifier: number; base_contribution: number; adjusted_contribution: number; utility_contribution: number; formula: string }
 export interface HistoryEntry { id: string; person_id: string; person_name: string; model_version: number; created_at: string; horizon_hours: number; action_count: number; top_action_title: string; top_total_utility: number }
 export interface Preview { features: Record<string, { points: { x: number; y: number }[]; preferred_exposure: number | null }>; aftereffects: Record<string, { points: { x: number; y: number }[] }> }
