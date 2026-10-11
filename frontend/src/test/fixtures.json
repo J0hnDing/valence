@@ -1,0 +1,1254 @@
+{
+  "action": {
+    "id": "0d7c3e91-555f-45bc-bddb-123f1475e706",
+    "title": "Attend AI conference for 6 hours",
+    "duration_minutes": 360.0,
+    "features": {
+      "stimulation_novelty": 0.7,
+      "autonomy_control": 0.2,
+      "competence_mastery": 0.1,
+      "goal_progress": 0.6,
+      "social_exposure": 0.9,
+      "relatedness_intimacy": 0.05,
+      "belonging_acceptance": 0.1,
+      "status_recognition": 0.15,
+      "influence_power": 0.05,
+      "contribution_care": 0.0,
+      "identity_value_alignment": 0.3,
+      "mental_effort": 0.35,
+      "mental_rest": 0,
+      "physical_effort": 0.15,
+      "physical_pleasure": 0,
+      "learning_gain": 0.75,
+      "curiosity_engagement": 0,
+      "structure_planning": 0,
+      "outcome_uncertainty": 0.025
+    },
+    "feature_notes": {
+      "stimulation_novelty": "DEMO: manually assigned illustrative encoding; not universal.",
+      "autonomy_control": "DEMO: manually assigned illustrative encoding; not universal.",
+      "competence_mastery": "DEMO: manually assigned illustrative encoding; not universal.",
+      "goal_progress": "DEMO: manually assigned illustrative encoding; not universal.",
+      "social_exposure": "DEMO: manually assigned illustrative encoding; not universal.",
+      "relatedness_intimacy": "DEMO: manually assigned illustrative encoding; not universal.",
+      "belonging_acceptance": "DEMO: manually assigned illustrative encoding; not universal.",
+      "status_recognition": "DEMO: manually assigned illustrative encoding; not universal.",
+      "influence_power": "DEMO: manually assigned illustrative encoding; not universal.",
+      "contribution_care": "DEMO: manually assigned illustrative encoding; not universal.",
+      "identity_value_alignment": "DEMO: manually assigned illustrative encoding; not universal.",
+      "mental_effort": "Earlier net demand note: DEMO: manually assigned illustrative encoding; not universal.",
+      "mental_rest": "Earlier general mental pleasure does not identify mental rest; review this input. DEMO: manually assigned illustrative encoding; not universal.",
+      "physical_effort": "Earlier net demand note: DEMO: manually assigned illustrative encoding; not universal.",
+      "physical_pleasure": "Earlier net demand cannot identify simultaneous effort and pleasure. DEMO: manually assigned illustrative encoding; not universal.",
+      "learning_gain": "Earlier combined learning/curiosity note; review knowledge actually gained: DEMO: manually assigned illustrative encoding; not universal.",
+      "structure_planning": "Earlier combined order/uncertainty note; review the independent input: Earlier closure/order note: DEMO: manually assigned illustrative encoding; not universal.; Earlier security/tranquility note: DEMO: manually assigned illustrative encoding; not universal.",
+      "outcome_uncertainty": "Earlier combined order/uncertainty note; review the independent input: Earlier closure/order note: DEMO: manually assigned illustrative encoding; not universal.; Earlier security/tranquility note: DEMO: manually assigned illustrative encoding; not universal."
+    },
+    "created_at": "2026-10-06T22:45:06.216735-04:00",
+    "updated_at": "2026-10-06T22:45:06.216735-04:00",
+    "net_money_cost": 0
+  },
+  "model": {
+    "features": {
+      "stimulation_novelty": {
+        "family": "reward_overload",
+        "reward_sensitivity": 0.8,
+        "overload_sensitivity": 0.6
+      },
+      "autonomy_control": {
+        "family": "asymmetric_signed",
+        "positive_sensitivity": 1.0,
+        "negative_sensitivity": 1.0,
+        "positive_curvature": 1.0,
+        "negative_curvature": 1.0
+      },
+      "competence_mastery": {
+        "family": "asymmetric_signed",
+        "positive_sensitivity": 1.0,
+        "negative_sensitivity": 1.0,
+        "positive_curvature": 1.0,
+        "negative_curvature": 1.0
+      },
+      "goal_progress": {
+        "family": "asymmetric_signed",
+        "positive_sensitivity": 1.0,
+        "negative_sensitivity": 1.0,
+        "positive_curvature": 1.0,
+        "negative_curvature": 1.0
+      },
+      "social_exposure": {
+        "family": "reward_overload",
+        "reward_sensitivity": 0.6,
+        "overload_sensitivity": 0.8
+      },
+      "relatedness_intimacy": {
+        "family": "asymmetric_signed",
+        "positive_sensitivity": 1.0,
+        "negative_sensitivity": 1.0,
+        "positive_curvature": 1.0,
+        "negative_curvature": 1.0
+      },
+      "belonging_acceptance": {
+        "family": "asymmetric_signed",
+        "positive_sensitivity": 1.0,
+        "negative_sensitivity": 1.0,
+        "positive_curvature": 1.0,
+        "negative_curvature": 1.0
+      },
+      "status_recognition": {
+        "family": "asymmetric_signed",
+        "positive_sensitivity": 1.0,
+        "negative_sensitivity": 1.0,
+        "positive_curvature": 1.0,
+        "negative_curvature": 1.0
+      },
+      "influence_power": {
+        "family": "asymmetric_signed",
+        "positive_sensitivity": 1.0,
+        "negative_sensitivity": 1.0,
+        "positive_curvature": 1.0,
+        "negative_curvature": 1.0
+      },
+      "contribution_care": {
+        "family": "asymmetric_signed",
+        "positive_sensitivity": 1.0,
+        "negative_sensitivity": 1.0,
+        "positive_curvature": 1.0,
+        "negative_curvature": 1.0
+      },
+      "identity_value_alignment": {
+        "family": "asymmetric_signed",
+        "positive_sensitivity": 1.0,
+        "negative_sensitivity": 1.0,
+        "positive_curvature": 1.0,
+        "negative_curvature": 1.0
+      },
+      "mental_effort": {
+        "family": "cost",
+        "cost_sensitivity": 1.0,
+        "curvature": 1.0
+      },
+      "mental_rest": {
+        "family": "reward",
+        "reward_sensitivity": 1,
+        "curvature": 1
+      },
+      "physical_effort": {
+        "family": "cost",
+        "cost_sensitivity": 1.0,
+        "curvature": 1.0
+      },
+      "physical_pleasure": {
+        "family": "reward",
+        "reward_sensitivity": 1,
+        "curvature": 1
+      },
+      "learning_gain": {
+        "family": "reward",
+        "reward_sensitivity": 1.0,
+        "curvature": 1.0
+      },
+      "curiosity_engagement": {
+        "family": "reward",
+        "reward_sensitivity": 1,
+        "curvature": 1
+      },
+      "structure_planning": {
+        "family": "order_preference",
+        "preference_sensitivity": 0.0
+      },
+      "outcome_uncertainty": {
+        "family": "order_preference",
+        "preference_sensitivity": -0.0
+      }
+    },
+    "transient": {
+      "low_mental_energy_cognitive_multiplier": 0.5,
+      "low_physical_energy_physical_multiplier": 0.5,
+      "stress_overload_multiplier": 0.25,
+      "stress_negative_multiplier": 0.25
+    },
+    "aftereffects": {
+      "accomplishment": {
+        "sensitivity": 0.5,
+        "half_life_hours": 12.0
+      },
+      "pride_ego": {
+        "sensitivity": 0.35,
+        "half_life_hours": 6.0
+      },
+      "relief": {
+        "sensitivity": 0.4,
+        "half_life_hours": 4.0
+      },
+      "inspiration": {
+        "sensitivity": 0.3,
+        "half_life_hours": 8.0
+      },
+      "guilt": {
+        "sensitivity": 0.45,
+        "half_life_hours": 12.0
+      },
+      "regret": {
+        "sensitivity": 0.45,
+        "half_life_hours": 12.0
+      },
+      "void": {
+        "sensitivity": 0.3,
+        "half_life_hours": 8.0
+      },
+      "fatigue": {
+        "sensitivity": 0.4,
+        "half_life_hours": 4.0
+      }
+    },
+    "resources": {
+      "time_value": 0,
+      "money_value": 0
+    }
+  },
+  "ontology": [
+    {
+      "key": "mental_effort",
+      "display_name": "Mental effort",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "definition": "Intensity of concentration, planning, decision-making, and working-memory demands during the activity, independently of rest or rewarding outcomes.",
+      "anchors": [
+        {
+          "value": 0,
+          "description": "No meaningful mental demand"
+        },
+        {
+          "value": 0.5,
+          "description": "Sustained moderate concentration"
+        },
+        {
+          "value": 1,
+          "description": "Extreme sustained mental effort"
+        }
+      ],
+      "belongs": [
+        "Concentration, planning, decision-making and working-memory demands"
+      ],
+      "excludes": [
+        "Mental rest",
+        "Curiosity engagement",
+        "Knowledge gained",
+        "Mastery satisfaction"
+      ],
+      "distinction": "Effort can coexist with curiosity, mastery, or relief; encode each independently rather than subtracting enjoyment from demand.",
+      "response_family": "cost",
+      "temporal_basis": "rate",
+      "examples": [
+        {
+          "value": 0,
+          "description": "No meaningful mental demand"
+        },
+        {
+          "value": 0.5,
+          "description": "Sustained moderate concentration"
+        },
+        {
+          "value": 1,
+          "description": "Extreme sustained mental effort"
+        }
+      ]
+    },
+    {
+      "key": "mental_rest",
+      "display_name": "Mental rest / relief",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "definition": "Experienced mental rest, calm, decompression, or release from cognitive demands during the activity. This is relief and respite, not general enjoyment of thinking.",
+      "anchors": [
+        {
+          "value": 0,
+          "description": "No meaningful mental respite"
+        },
+        {
+          "value": 0.5,
+          "description": "Noticeable mental rest or decompression"
+        },
+        {
+          "value": 1,
+          "description": "Deep sustained mental rest or relief from demands"
+        }
+      ],
+      "belongs": [
+        "Mental rest, calm, decompression and respite from demands"
+      ],
+      "excludes": [
+        "Enjoyment of solving problems",
+        "Learning",
+        "Curiosity",
+        "Mastery",
+        "Post-action relief aftereffect"
+      ],
+      "distinction": "Low effort does not imply restorative rest. Mental rest describes respite actually experienced; other features capture rewards of active thought.",
+      "response_family": "reward",
+      "temporal_basis": "rate",
+      "examples": [
+        {
+          "value": 0,
+          "description": "No meaningful mental respite"
+        },
+        {
+          "value": 0.5,
+          "description": "Noticeable mental rest or decompression"
+        },
+        {
+          "value": 1,
+          "description": "Deep sustained mental rest or relief from demands"
+        }
+      ]
+    },
+    {
+      "key": "physical_effort",
+      "display_name": "Physical effort",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "definition": "Intensity of bodily exertion, strain, discomfort, or fatigue during the activity, independently of pleasant bodily experience.",
+      "anchors": [
+        {
+          "value": 0,
+          "description": "No meaningful physical effort"
+        },
+        {
+          "value": 0.5,
+          "description": "Moderate bodily exertion"
+        },
+        {
+          "value": 1,
+          "description": "Extreme sustained physical effort"
+        }
+      ],
+      "belongs": [
+        "Exertion, strain, discomfort and fatigue during activity"
+      ],
+      "excludes": [
+        "Physical pleasure",
+        "Mental effort",
+        "Post-action fatigue amplitude"
+      ],
+      "distinction": "A demanding activity can also feel physically pleasant; encode effort and pleasure separately.",
+      "response_family": "cost",
+      "temporal_basis": "rate",
+      "examples": [
+        {
+          "value": 0,
+          "description": "No meaningful physical effort"
+        },
+        {
+          "value": 0.5,
+          "description": "Moderate bodily exertion"
+        },
+        {
+          "value": 1,
+          "description": "Extreme sustained physical effort"
+        }
+      ]
+    },
+    {
+      "key": "physical_pleasure",
+      "display_name": "Physical pleasure / comfort",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "definition": "Intensity of pleasant bodily sensations, comfortable rest, or enjoyment of movement during the activity, independently of exertion.",
+      "anchors": [
+        {
+          "value": 0,
+          "description": "No meaningful physical pleasure or comfort"
+        },
+        {
+          "value": 0.5,
+          "description": "Noticeable pleasant movement or bodily comfort"
+        },
+        {
+          "value": 1,
+          "description": "Strong sustained bodily pleasure or comfort"
+        }
+      ],
+      "belongs": [
+        "Pleasant bodily sensations, comfortable rest and pleasant movement"
+      ],
+      "excludes": [
+        "Mastery",
+        "Recognition",
+        "Mental rest",
+        "Absence of effort alone"
+      ],
+      "distinction": "Pleasure and effort can both be high. A strenuous enjoyable run need not be encoded as either effort or pleasure alone.",
+      "response_family": "reward",
+      "temporal_basis": "rate",
+      "examples": [
+        {
+          "value": 0,
+          "description": "No meaningful physical pleasure or comfort"
+        },
+        {
+          "value": 0.5,
+          "description": "Noticeable pleasant movement or bodily comfort"
+        },
+        {
+          "value": 1,
+          "description": "Strong sustained bodily pleasure or comfort"
+        }
+      ]
+    },
+    {
+      "key": "stimulation_novelty",
+      "display_name": "Stimulation / novelty",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "definition": "Amount of novelty, excitement, sensory stimulation, unpredictability, and environmental intensity.",
+      "anchors": [
+        {
+          "value": 0,
+          "description": "Highly familiar or unstimulating"
+        },
+        {
+          "value": 0.5,
+          "description": "Noticeably novel or stimulating"
+        },
+        {
+          "value": 1,
+          "description": "Extremely novel or intense"
+        }
+      ],
+      "belongs": [
+        "Novelty, excitement, sensory stimulation and environmental intensity"
+      ],
+      "excludes": [
+        "Knowledge gained",
+        "Social contact quantity",
+        "Threat or safety change"
+      ],
+      "distinction": "Sensory novelty may teach little. Curiosity concerns inquiry; outcome uncertainty concerns uncertain consequences rather than excitement alone.",
+      "response_family": "reward_overload",
+      "temporal_basis": "rate",
+      "examples": [
+        {
+          "value": 0,
+          "description": "Highly familiar or unstimulating"
+        },
+        {
+          "value": 0.5,
+          "description": "Noticeably novel or stimulating"
+        },
+        {
+          "value": 1,
+          "description": "Extremely novel or intense"
+        }
+      ]
+    },
+    {
+      "key": "learning_gain",
+      "display_name": "Knowledge / learning gained",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "definition": "Amount of meaningful new knowledge or understanding gained as a whole-action outcome, whether or not the learning process was engaging.",
+      "anchors": [
+        {
+          "value": 0,
+          "description": "No meaningful knowledge gained"
+        },
+        {
+          "value": 0.5,
+          "description": "Moderate substantive knowledge or understanding gained"
+        },
+        {
+          "value": 1,
+          "description": "Extensive substantive knowledge or understanding gained"
+        }
+      ],
+      "belongs": [
+        "New knowledge and understanding gained"
+      ],
+      "excludes": [
+        "Inquiry without learning",
+        "Mental effort",
+        "Sensory novelty",
+        "Mastery experience"
+      ],
+      "distinction": "Count the knowledge gained once. Curiosity engagement describes the inquiry experience and can occur without a useful discovery.",
+      "response_family": "reward",
+      "temporal_basis": "one_time",
+      "examples": [
+        {
+          "value": 0,
+          "description": "No meaningful knowledge gained"
+        },
+        {
+          "value": 0.5,
+          "description": "Moderate substantive knowledge or understanding gained"
+        },
+        {
+          "value": 1,
+          "description": "Extensive substantive knowledge or understanding gained"
+        }
+      ]
+    },
+    {
+      "key": "curiosity_engagement",
+      "display_name": "Curiosity / exploration",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "definition": "Intensity of engaged inquiry, investigation, or exploration during the activity, independently of knowledge ultimately gained.",
+      "anchors": [
+        {
+          "value": 0,
+          "description": "No meaningful inquiry or exploration"
+        },
+        {
+          "value": 0.5,
+          "description": "Noticeably engaging investigation or exploration"
+        },
+        {
+          "value": 1,
+          "description": "Deep sustained engagement in inquiry or exploration"
+        }
+      ],
+      "belongs": [
+        "Engaged inquiry, investigation and exploration"
+      ],
+      "excludes": [
+        "Knowledge gained",
+        "Sensory novelty alone",
+        "Mental rest",
+        "Mastery alone"
+      ],
+      "distinction": "An investigation can engage curiosity without teaching anything new; mental effort can coexist with this experience.",
+      "response_family": "reward",
+      "temporal_basis": "rate",
+      "examples": [
+        {
+          "value": 0,
+          "description": "No meaningful inquiry or exploration"
+        },
+        {
+          "value": 0.5,
+          "description": "Noticeably engaging investigation or exploration"
+        },
+        {
+          "value": 1,
+          "description": "Deep sustained engagement in inquiry or exploration"
+        }
+      ]
+    },
+    {
+      "key": "autonomy_control",
+      "display_name": "Autonomy / control",
+      "minimum": -1.0,
+      "maximum": 1.0,
+      "definition": "Experienced freedom to choose, change, or refuse what one does during the activity versus coercion or imposed constraints. Existing freedom can be exercised without gaining future autonomy.",
+      "anchors": [
+        {
+          "value": -1,
+          "description": "Severely coerced with no meaningful choice"
+        },
+        {
+          "value": -0.5,
+          "description": "Meaningfully imposed or restrictive"
+        },
+        {
+          "value": 0,
+          "description": "No salient freedom or constraint"
+        },
+        {
+          "value": 0.5,
+          "description": "Meaningfully self-directed with real choices"
+        },
+        {
+          "value": 1,
+          "description": "Strong freedom to choose, change or refuse"
+        }
+      ],
+      "belongs": [
+        "Free choice, self-direction, personal control and coercion"
+      ],
+      "excludes": [
+        "Influence over other people or external events"
+      ],
+      "distinction": "A self-chosen detailed plan can have high structure and high autonomy. Influence concerns shaping external decisions rather than choosing one's own actions.",
+      "response_family": "asymmetric_signed",
+      "temporal_basis": "rate",
+      "examples": [
+        {
+          "value": -1,
+          "description": "Severely coerced with no meaningful choice"
+        },
+        {
+          "value": -0.5,
+          "description": "Meaningfully imposed or restrictive"
+        },
+        {
+          "value": 0,
+          "description": "No salient freedom or constraint"
+        },
+        {
+          "value": 0.5,
+          "description": "Meaningfully self-directed with real choices"
+        },
+        {
+          "value": 1,
+          "description": "Strong freedom to choose, change or refuse"
+        }
+      ]
+    },
+    {
+      "key": "competence_mastery",
+      "display_name": "Competence / mastery",
+      "minimum": -1.0,
+      "maximum": 1.0,
+      "definition": "Expected experience of capability, mastery, successful challenge, or failure: effective skill use and overcoming challenge versus salient failure, helplessness, or inability to perform.",
+      "anchors": [
+        {
+          "value": -1,
+          "description": "Severe salient failure or inability to perform"
+        },
+        {
+          "value": -0.5,
+          "description": "Meaningful failure or helplessness"
+        },
+        {
+          "value": 0,
+          "description": "No salient capability experience"
+        },
+        {
+          "value": 0.5,
+          "description": "Successful challenge or effective skill use"
+        },
+        {
+          "value": 1,
+          "description": "Strong mastery experience"
+        }
+      ],
+      "belongs": [
+        "Successful challenge, skill use, mastery and salient failure"
+      ],
+      "excludes": [
+        "Knowledge gained",
+        "External recognition",
+        "Goal advancement alone"
+      ],
+      "distinction": "Do not duplicate learning. Mastery concerns experienced capability; recognition concerns others' praise or prestige.",
+      "response_family": "asymmetric_signed",
+      "temporal_basis": "rate",
+      "examples": [
+        {
+          "value": -1,
+          "description": "Severe salient failure or inability to perform"
+        },
+        {
+          "value": -0.5,
+          "description": "Meaningful failure or helplessness"
+        },
+        {
+          "value": 0,
+          "description": "No salient capability experience"
+        },
+        {
+          "value": 0.5,
+          "description": "Successful challenge or effective skill use"
+        },
+        {
+          "value": 1,
+          "description": "Strong mastery experience"
+        }
+      ]
+    },
+    {
+      "key": "goal_progress",
+      "display_name": "Goal progress",
+      "minimum": -1.0,
+      "maximum": 1.0,
+      "definition": "Expected net effect on relevant goals. The caller incorporates goal importance in the value; the Person Model determines the utility response to progress.",
+      "anchors": [
+        {
+          "value": -1,
+          "description": "Severe setback to an important goal"
+        },
+        {
+          "value": -0.5,
+          "description": "Meaningful setback"
+        },
+        {
+          "value": 0,
+          "description": "No meaningful effect"
+        },
+        {
+          "value": 0.5,
+          "description": "Meaningful progress"
+        },
+        {
+          "value": 1,
+          "description": "Major advancement of an important goal"
+        }
+      ],
+      "belongs": [
+        "Net advancement or setback, with relevant goal importance incorporated"
+      ],
+      "excludes": [
+        "Pleasure of progress itself",
+        "Ordinary liking",
+        "Completion alone"
+      ],
+      "distinction": "Goal advancement and structure are separate: progress may happen without making a plan more defined or predictable.",
+      "response_family": "asymmetric_signed",
+      "temporal_basis": "one_time",
+      "examples": [
+        {
+          "value": -1,
+          "description": "Severe setback to an important goal"
+        },
+        {
+          "value": -0.5,
+          "description": "Meaningful setback"
+        },
+        {
+          "value": 0,
+          "description": "No meaningful effect"
+        },
+        {
+          "value": 0.5,
+          "description": "Meaningful progress"
+        },
+        {
+          "value": 1,
+          "description": "Major advancement of an important goal"
+        }
+      ]
+    },
+    {
+      "key": "structure_planning",
+      "display_name": "Structure / planning",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "definition": "Degree to which the activity follows a defined plan, rules, or sequence, independently of who chose it or how certain its outcomes are.",
+      "anchors": [
+        {
+          "value": 0,
+          "description": "Freely improvised without a defined sequence"
+        },
+        {
+          "value": 0.5,
+          "description": "Partly planned with room to improvise"
+        },
+        {
+          "value": 1,
+          "description": "Tightly planned or prescribed sequence"
+        }
+      ],
+      "belongs": [
+        "Defined plans, rules, routines and sequences"
+      ],
+      "excludes": [
+        "Freedom to choose or refuse",
+        "Certainty of outcomes",
+        "Goal progress"
+      ],
+      "distinction": "Structure does not determine autonomy or outcome certainty. A signed Person Model sensitivity can favor structure or improvisation.",
+      "response_family": "order_preference",
+      "temporal_basis": "rate",
+      "examples": [
+        {
+          "value": 0,
+          "description": "Freely improvised without a defined sequence"
+        },
+        {
+          "value": 0.5,
+          "description": "Partly planned with room to improvise"
+        },
+        {
+          "value": 1,
+          "description": "Tightly planned or prescribed sequence"
+        }
+      ]
+    },
+    {
+      "key": "outcome_uncertainty",
+      "display_name": "Outcome uncertainty",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "definition": "Degree of uncertainty about relevant consequences given what the person knows, independently of planning, sensory novelty, or whether possible consequences are harmful.",
+      "anchors": [
+        {
+          "value": 0,
+          "description": "Relevant consequences are predictable"
+        },
+        {
+          "value": 0.5,
+          "description": "Meaningfully uncertain relevant consequences"
+        },
+        {
+          "value": 1,
+          "description": "Widely varying possible relevant consequences"
+        }
+      ],
+      "belongs": [
+        "Uncertainty about relevant outcomes"
+      ],
+      "excludes": [
+        "Lack of planning alone",
+        "Sensory surprise alone",
+        "Expected money loss",
+        "Harm or moral violation alone"
+      ],
+      "distinction": "A planned event can have uncertain outcomes. Uncertainty is not downside risk: encode gains and losses in the relevant outcome or resource fields without counting them here again.",
+      "response_family": "order_preference",
+      "temporal_basis": "rate",
+      "examples": [
+        {
+          "value": 0,
+          "description": "Relevant consequences are predictable"
+        },
+        {
+          "value": 0.5,
+          "description": "Meaningfully uncertain relevant consequences"
+        },
+        {
+          "value": 1,
+          "description": "Widely varying possible relevant consequences"
+        }
+      ]
+    },
+    {
+      "key": "social_exposure",
+      "display_name": "Social exposure",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "definition": "Quantity and intensity of interpersonal interaction, independent of whether the person likes socializing.",
+      "anchors": [
+        {
+          "value": 0,
+          "description": "Solitary"
+        },
+        {
+          "value": 0.25,
+          "description": "Light interaction"
+        },
+        {
+          "value": 0.5,
+          "description": "Sustained interaction with a few people"
+        },
+        {
+          "value": 0.75,
+          "description": "Socially intensive group activity"
+        },
+        {
+          "value": 1,
+          "description": "Extremely socially intensive interaction"
+        }
+      ],
+      "belongs": [
+        "Amount and intensity of interpersonal interaction"
+      ],
+      "excludes": [
+        "Whether socializing is liked",
+        "Closeness",
+        "Acceptance",
+        "Prestige"
+      ],
+      "distinction": "Contact intensity differs from meaningful closeness, group inclusion and status; these have separate signed features.",
+      "response_family": "reward_overload",
+      "temporal_basis": "rate",
+      "examples": [
+        {
+          "value": 0,
+          "description": "Solitary"
+        },
+        {
+          "value": 0.25,
+          "description": "Light interaction"
+        },
+        {
+          "value": 0.5,
+          "description": "Sustained interaction with a few people"
+        },
+        {
+          "value": 0.75,
+          "description": "Socially intensive group activity"
+        },
+        {
+          "value": 1,
+          "description": "Extremely socially intensive interaction"
+        }
+      ]
+    },
+    {
+      "key": "relatedness_intimacy",
+      "display_name": "Relatedness / intimacy",
+      "minimum": -1.0,
+      "maximum": 1.0,
+      "definition": "Experienced meaningful warmth, closeness, intimacy, or relational conflict during the activity. Existing closeness can be enjoyed without a lasting relationship improvement.",
+      "anchors": [
+        {
+          "value": -1,
+          "description": "Severe experienced conflict or disconnection"
+        },
+        {
+          "value": -0.5,
+          "description": "Meaningful relational tension"
+        },
+        {
+          "value": 0,
+          "description": "No salient closeness or conflict"
+        },
+        {
+          "value": 0.5,
+          "description": "Meaningful warmth or connection"
+        },
+        {
+          "value": 1,
+          "description": "Strong experienced intimacy or closeness"
+        }
+      ],
+      "belongs": [
+        "Experienced intimacy, relational warmth, conflict and disconnection"
+      ],
+      "excludes": [
+        "Generic social interaction",
+        "Group inclusion alone",
+        "Lasting relationship change alone"
+      ],
+      "distinction": "Generic interaction belongs in social_exposure; belonging_acceptance concerns inclusion or rejection rather than intimate closeness.",
+      "response_family": "asymmetric_signed",
+      "temporal_basis": "rate",
+      "examples": [
+        {
+          "value": -1,
+          "description": "Severe experienced conflict or disconnection"
+        },
+        {
+          "value": -0.5,
+          "description": "Meaningful relational tension"
+        },
+        {
+          "value": 0,
+          "description": "No salient closeness or conflict"
+        },
+        {
+          "value": 0.5,
+          "description": "Meaningful warmth or connection"
+        },
+        {
+          "value": 1,
+          "description": "Strong experienced intimacy or closeness"
+        }
+      ]
+    },
+    {
+      "key": "belonging_acceptance",
+      "display_name": "Belonging / acceptance",
+      "minimum": -1.0,
+      "maximum": 1.0,
+      "definition": "Experienced membership, inclusion, welcome, acceptance, rejection, or exclusion during the activity. Belonging to an existing group does not require newly earning acceptance.",
+      "anchors": [
+        {
+          "value": -1,
+          "description": "Severe rejection or exclusion"
+        },
+        {
+          "value": -0.5,
+          "description": "Meaningful social disapproval or exclusion"
+        },
+        {
+          "value": 0,
+          "description": "No meaningful inclusion effect"
+        },
+        {
+          "value": 0.5,
+          "description": "Meaningfully welcomed or included"
+        },
+        {
+          "value": 1,
+          "description": "Strong acceptance and belonging"
+        }
+      ],
+      "belongs": [
+        "Inclusion, welcome, acceptance, rejection and exclusion"
+      ],
+      "excludes": [
+        "Prestige or praise alone",
+        "Intimacy alone",
+        "Quantity of interaction"
+      ],
+      "distinction": "Acceptance concerns inclusion; status_recognition concerns prestige. Inclusion need not imply intimacy or admiration.",
+      "response_family": "asymmetric_signed",
+      "temporal_basis": "rate",
+      "examples": [
+        {
+          "value": -1,
+          "description": "Severe rejection or exclusion"
+        },
+        {
+          "value": -0.5,
+          "description": "Meaningful social disapproval or exclusion"
+        },
+        {
+          "value": 0,
+          "description": "No meaningful inclusion effect"
+        },
+        {
+          "value": 0.5,
+          "description": "Meaningfully welcomed or included"
+        },
+        {
+          "value": 1,
+          "description": "Strong acceptance and belonging"
+        }
+      ]
+    },
+    {
+      "key": "status_recognition",
+      "display_name": "Status / recognition",
+      "minimum": -1.0,
+      "maximum": 1.0,
+      "definition": "Whole-action recognition episode: being admired, respected, acknowledged, dismissed, or humiliated, including recognition of existing status. A lasting reputation gain is not required.",
+      "anchors": [
+        {
+          "value": -1,
+          "description": "Severe humiliation or dismissal"
+        },
+        {
+          "value": -0.5,
+          "description": "Meaningful loss of face"
+        },
+        {
+          "value": 0,
+          "description": "No meaningful recognition episode"
+        },
+        {
+          "value": 0.5,
+          "description": "Meaningful admiration or recognition"
+        },
+        {
+          "value": 1,
+          "description": "Strong admiration, respect or acknowledgment"
+        }
+      ],
+      "belongs": [
+        "Praise, prestige, reputation, humiliation and loss of face"
+      ],
+      "excludes": [
+        "Inclusion alone",
+        "Capability alone",
+        "Decision authority alone"
+      ],
+      "distinction": "Recognition is external regard; competence_mastery is capability experienced, and influence_power is ability to shape external outcomes.",
+      "response_family": "asymmetric_signed",
+      "temporal_basis": "one_time",
+      "examples": [
+        {
+          "value": -1,
+          "description": "Severe humiliation or dismissal"
+        },
+        {
+          "value": -0.5,
+          "description": "Meaningful loss of face"
+        },
+        {
+          "value": 0,
+          "description": "No meaningful recognition episode"
+        },
+        {
+          "value": 0.5,
+          "description": "Meaningful admiration or recognition"
+        },
+        {
+          "value": 1,
+          "description": "Strong admiration, respect or acknowledgment"
+        }
+      ]
+    },
+    {
+      "key": "influence_power",
+      "display_name": "Influence / power",
+      "minimum": -1.0,
+      "maximum": 1.0,
+      "definition": "Experienced exercise of authority, leadership, or a meaningful say in external decisions during the activity versus being overruled or powerless. Existing influence can be exercised without gaining permanent power.",
+      "anchors": [
+        {
+          "value": -1,
+          "description": "Severely overruled or powerless over relevant decisions"
+        },
+        {
+          "value": -0.5,
+          "description": "Meaningfully denied a say"
+        },
+        {
+          "value": 0,
+          "description": "No salient exercise or denial of influence"
+        },
+        {
+          "value": 0.5,
+          "description": "Meaningful say or leadership"
+        },
+        {
+          "value": 1,
+          "description": "Strong exercise of authority or direction followed by others"
+        }
+      ],
+      "belongs": [
+        "Leadership and influence over external people, resources or decisions"
+      ],
+      "excludes": [
+        "Control over one's own actions",
+        "Prestige alone",
+        "Personal skill success alone"
+      ],
+      "distinction": "Autonomy concerns control over one's own actions; influence concerns external people or events, even without prestige.",
+      "response_family": "asymmetric_signed",
+      "temporal_basis": "rate",
+      "examples": [
+        {
+          "value": -1,
+          "description": "Severely overruled or powerless over relevant decisions"
+        },
+        {
+          "value": -0.5,
+          "description": "Meaningfully denied a say"
+        },
+        {
+          "value": 0,
+          "description": "No salient exercise or denial of influence"
+        },
+        {
+          "value": 0.5,
+          "description": "Meaningful say or leadership"
+        },
+        {
+          "value": 1,
+          "description": "Strong exercise of authority or direction followed by others"
+        }
+      ]
+    },
+    {
+      "key": "contribution_care",
+      "display_name": "Contribution / care",
+      "minimum": -1.0,
+      "maximum": 1.0,
+      "definition": "Effect on helping, protecting, caring for, benefiting, or harming others: meaningful contribution or improved welfare versus meaningful avoidable harm or neglect of an important responsibility.",
+      "anchors": [
+        {
+          "value": -1,
+          "description": "Severe avoidable harm or neglect"
+        },
+        {
+          "value": -0.5,
+          "description": "Meaningful harm to others"
+        },
+        {
+          "value": 0,
+          "description": "No meaningful welfare effect on others"
+        },
+        {
+          "value": 0.5,
+          "description": "Meaningful help or care"
+        },
+        {
+          "value": 1,
+          "description": "Major benefit or protection for others"
+        }
+      ],
+      "belongs": [
+        "Helping, protection, care, others' welfare and avoidable harm"
+      ],
+      "excludes": [
+        "Recognition for helping",
+        "Personal liking",
+        "Value alignment alone"
+      ],
+      "distinction": "Contribution records others' welfare; identity_value_alignment records expressing or violating one's ideals. These can differ.",
+      "response_family": "asymmetric_signed",
+      "temporal_basis": "one_time",
+      "examples": [
+        {
+          "value": -1,
+          "description": "Severe avoidable harm or neglect"
+        },
+        {
+          "value": -0.5,
+          "description": "Meaningful harm to others"
+        },
+        {
+          "value": 0,
+          "description": "No meaningful welfare effect on others"
+        },
+        {
+          "value": 0.5,
+          "description": "Meaningful help or care"
+        },
+        {
+          "value": 1,
+          "description": "Major benefit or protection for others"
+        }
+      ]
+    },
+    {
+      "key": "identity_value_alignment",
+      "display_name": "Personal principles / values",
+      "minimum": -1.0,
+      "maximum": 1.0,
+      "definition": "Expression or violation of specific personal principles during the activity, such as honesty, fairness, or a concrete commitment. Encode the principle at stake rather than general liking, ego, or desired self-image.",
+      "anchors": [
+        {
+          "value": -1,
+          "description": "Substantial violation of an identified personal principle"
+        },
+        {
+          "value": -0.5,
+          "description": "Meaningful conflict with a specific principle"
+        },
+        {
+          "value": 0,
+          "description": "No specific principle expressed or violated"
+        },
+        {
+          "value": 0.5,
+          "description": "Meaningfully expresses a specific principle"
+        },
+        {
+          "value": 1,
+          "description": "Strong expression of an important personal principle"
+        }
+      ],
+      "belongs": [
+        "Expression or violation of identified personal principles"
+      ],
+      "excludes": [
+        "Broad desired self-image",
+        "Ego or prestige alone",
+        "Ordinary preferences",
+        "Others' welfare alone",
+        "Goal advancement alone"
+      ],
+      "distinction": "Keep the specific principle distinct from mastery, recognition, contribution, and liking. An unpleasant action can still express honesty or fairness.",
+      "response_family": "asymmetric_signed",
+      "temporal_basis": "rate",
+      "examples": [
+        {
+          "value": -1,
+          "description": "Substantial violation of an identified personal principle"
+        },
+        {
+          "value": -0.5,
+          "description": "Meaningful conflict with a specific principle"
+        },
+        {
+          "value": 0,
+          "description": "No specific principle expressed or violated"
+        },
+        {
+          "value": 0.5,
+          "description": "Meaningfully expresses a specific principle"
+        },
+        {
+          "value": 1,
+          "description": "Strong expression of an important personal principle"
+        }
+      ]
+    }
+  ]
+}
