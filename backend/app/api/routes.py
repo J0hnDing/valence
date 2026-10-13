@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from app import ENGINE_VERSION
 from app.core.compatibility import normalize_action, normalize_model
 from app.core.initialization import initialize_from_quiz, quiz_schema, validate_answers
+from app.core.person_model_export import export_person_model
 from app.core.utility import evaluate, model_preview
 from app.db.models import Action, DailyState, Evaluation, EvaluationResult, Person, PersonModelVersion, timestamp
 from app.schemas import ActionInput, PersonModel, TransientState, default_model
@@ -283,6 +284,21 @@ def get_model_version(person_id: str, version_id: str, session: ReadSession):
 @router.get("/persons/{person_id}/model")
 def get_model(person_id: str, session: ReadSession):
     return model_payload(latest_model(session, person_id))
+
+
+@router.get("/persons/{person_id}/model-versions/{version_id}/export")
+def export_model_version(person_id: str, version_id: str, session: ReadSession):
+    person = require(session, Person, person_id)
+    version = require_model_version(session, person_id, version_id)
+    try:
+        content = export_person_model(person, version)
+    except (ValueError, OverflowError) as error:
+        raise HTTPException(422, "This saved model is incompatible with exact export. "
+                            "Review its current parameters and save a new version before exporting. "
+                            f"Details: {error}") from error
+    filename = f"person-{person.id}-v{version.version}-{version.id}.valence.json"
+    return Response(content=content, media_type="application/json",
+                    headers={"Content-Disposition": f'attachment; filename="{filename}"'})
 
 
 @router.put("/persons/{person_id}/model")

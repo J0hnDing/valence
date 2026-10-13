@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from app.core.aftereffects import (SIGNS, TRIGGER_SPECS, decay, decay_integral_factor,
                                   finite, integrate_decay, neg, pos, triggers)
 from app.core.ontology import FEATURE_BY_KEY, FEATURE_KEYS
-from app.core.homeostasis import energy_modifier, evaluate_energy, evaluate_needs
+from app.core.homeostasis import energy_modifier, rest_energy_modifier, evaluate_energy, evaluate_needs
 
 if TYPE_CHECKING:
     from app.schemas.models import ActionInput, PersonModel, TransientState
@@ -47,6 +47,8 @@ def effective_parameters(key, parameters, model, state, include_energy=True):
         effective["cost_sensitivity"] *= energy_modifier(state.mental_energy, model.transient.low_mental_energy_cognitive_multiplier)
     elif key == "physical_effort" and parameters.family == "cost" and include_energy:
         effective["cost_sensitivity"] *= energy_modifier(state.physical_energy, model.transient.low_physical_energy_physical_multiplier)
+    elif key == "mental_rest" and parameters.family == "reward" and include_energy:
+        effective["reward_sensitivity"] *= rest_energy_modifier(state.mental_energy, model.transient.low_mental_energy_cognitive_multiplier)
     elif parameters.family == "reward_overload":
         effective["overload_sensitivity"] *= 1 + model.transient.stress_overload_multiplier * state.acute_stress
     elif parameters.family == "asymmetric_signed":

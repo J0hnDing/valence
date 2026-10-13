@@ -118,7 +118,7 @@ def test_energy_bounds_and_neutral_values(energy, alpha, expected):
                       TransientState(mental_energy=energy), 0)
     assert result["energy_traces"][0]["base_contribution"] == -.5
     assert result["energy_traces"][0]["adjusted_contribution"] == pytest.approx(-.5 * expected)
-    assert result["energy_utility"] == pytest.approx(-.5 * (expected - 1))
+    assert result["energy_utility"] == pytest.approx(-.5 * (expected - 1) + max(0, expected - 1))
     assert result["total_utility"] == pytest.approx(result["base_utility"] + result["energy_utility"])
     assert model_preview(model, TransientState(mental_energy=energy))["features"]["mental_effort"]["points"][-1]["y"] == pytest.approx(-expected)
 
@@ -227,7 +227,7 @@ def test_api_state_save_evaluation_reproduction_and_restart_preserve_current_sta
         response = client.post("/api/evaluations", json=request)
         assert response.status_code == 201, response.text
         historical = response.json()
-        assert historical["engine_version"] == "7"
+        assert historical["engine_version"] == "8"
         result = historical["results"][0]
         assert need(result, "physical_activity")["utility_contribution"] > 0
         assert need(result, "goal_progression")["utility_contribution"] < 0
@@ -273,7 +273,7 @@ def test_v5_saved_models_and_states_are_projected_without_rewriting_history(clie
         assert session.get(PersonModelVersion, version["id"]).model == old_model
 
 
-def test_v6_rates_and_prediction_snapshots_are_preserved_but_not_used_by_v7(client, app):
+def test_v6_rates_and_prediction_snapshots_are_preserved_but_not_used_by_v8(client, app):
     person = client.post("/api/persons", json={"name": "Engine 6 history"}).json()
     path = f"/api/persons/{person['id']}/model"
     version = client.get(path).json()
@@ -300,7 +300,7 @@ def test_v6_rates_and_prediction_snapshots_are_preserved_but_not_used_by_v7(clie
     assert client.put(path, json={"model": old_model}).status_code == 422
     fresh = client.post("/api/evaluations", json={"person_id": person["id"], "action_ids": [encoded["id"]],
                                                  "state": {"need_satisfaction": {"goal_progression": 0}}, "horizon_hours": 0}).json()
-    assert fresh["engine_version"] == "7"
+    assert fresh["engine_version"] == "8"
     assert fresh["results"][0]["needs_utility"] == 1
     assert all("predicted_satisfaction" not in t for t in fresh["results"][0]["need_traces"])
     with app.state.database.sessions() as session:

@@ -135,7 +135,7 @@ def test_saved_inputs_still_edit_copy_evaluate_while_earlier_history_stays_exact
     current = client.post("/api/evaluations", json=request)
     assert current.status_code == 201, current.text
     current = current.json()
-    assert current["engine_version"] == "7"
+    assert current["engine_version"] == "8"
     assert set(current["model_snapshot"]["features"]) == set(FEATURE_KEYS)
     assert {t["feature_key"] for t in current["results"][0]["feature_traces"]} == set(FEATURE_KEYS)
     assert client.post(f"/api/evaluations/{current['id']}/reproduce").json()["matches"] is True

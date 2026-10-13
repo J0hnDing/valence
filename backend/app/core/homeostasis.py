@@ -1,4 +1,4 @@
-"""Bounded, deterministic need values and effort adjustments; no state mutation."""
+"""Bounded need values, effort costs, and rest rewards; no state mutation."""
 import math
 
 from app.core.ontology import FEATURE_BY_KEY
@@ -11,6 +11,11 @@ def clip(value, lower=0.0, upper=1.0):
 
 def energy_modifier(energy, alpha):
     return 1.0 if energy is None else clip(1 + alpha * (.7 - energy), .5, 2.0)
+
+
+def rest_energy_modifier(energy, alpha):
+    """Low mental energy increases respite reward; high/unknown energy is neutral."""
+    return 1.0 if energy is None else clip(1 + alpha * (.7 - energy), 1.0, 2.0)
 
 
 def need_pressure(satisfaction, lower, upper):
@@ -93,32 +98,33 @@ def evaluate_needs(model, state, experienced_features, graph):
 
 def evaluate_energy(model, state, feature_traces, graph):
     traces, sources = [], []
-    for key, state_key, parameter_key in (
-        ("mental_effort", "mental_energy", "low_mental_energy_cognitive_multiplier"),
-        ("physical_effort", "physical_energy", "low_physical_energy_physical_multiplier"),
+    for key, state_key, parameter_key, is_rest in (
+        ("mental_effort", "mental_energy", "low_mental_energy_cognitive_multiplier", False),
+        ("physical_effort", "physical_energy", "low_physical_energy_physical_multiplier", False),
+        ("mental_rest", "mental_energy", "low_mental_energy_cognitive_multiplier", True),
     ):
         energy = getattr(state, state_key)
         alpha = getattr(model.transient, parameter_key)
-        modifier = energy_modifier(energy, alpha)
+        modifier = (rest_energy_modifier if is_rest else energy_modifier)(energy, alpha)
         base = next(t["utility_contribution"] for t in feature_traces if t["feature_key"] == key)
         adjusted = base * modifier
         utility = base * (modifier - 1)
         factor_id = graph.add(f"modifier:{key}", f"{key}: energy factor", "modifier", modifier,
-                              "Bounded positive effort-cost modifier; unavailable energy gives one.", {"energy": energy}, {"alpha": alpha},
-                              "1 if energy is unavailable else clip(1 + alpha * (0.7 - energy), 0.5, 2)",
+                              "Bounded mental-rest reward modifier; high or unavailable energy gives one." if is_rest else "Bounded positive effort-cost modifier; unavailable energy gives one.", {"energy": energy}, {"alpha": alpha},
+                              "1 if energy is unavailable else clip(1 + alpha * (0.7 - energy), 1, 2)" if is_rest else "1 if energy is unavailable else clip(1 + alpha * (0.7 - energy), 0.5, 2)",
                               [f"state:{state_key}", f"global:{parameter_key}"])
-        adjusted_id = graph.add(f"energy:{key}:adjusted", f"{key}: adjusted cost", "energy_cost", adjusted,
-                                "Actual effort contribution adjusted by energy without reversing polarity.",
+        adjusted_id = graph.add(f"energy:{key}:adjusted", f"{key}: adjusted reward" if is_rest else f"{key}: adjusted cost", "energy_reward" if is_rest else "energy_cost", adjusted,
+                                "Actual mental-rest contribution increased by low energy, using its exposure duration." if is_rest else "Actual effort contribution adjusted by energy without reversing polarity.",
                                 {"base_contribution": base, "modifier": modifier}, formula="base_contribution * modifier",
                                 sources=[f"contribution:{key}", factor_id])
         formula = "base_contribution * (modifier - 1)"
         sources.append(graph.add(f"energy:{key}:utility", f"{key}: energy adjustment", "energy_utility", utility,
-                                 "Difference from base effort cost; avoids counting the cost twice.",
+                                 "Additional mental-rest reward above the base contribution; counted once." if is_rest else "Difference from base effort cost; avoids counting the cost twice.",
                                  {"base_contribution": base, "adjusted_contribution": adjusted, "modifier": modifier}, formula=formula,
                                  sources=[f"contribution:{key}", factor_id, adjusted_id]))
         traces.append({"feature_key": key, "energy": energy, "alpha": alpha, "modifier": modifier,
                        "base_contribution": base, "adjusted_contribution": adjusted, "utility_contribution": utility, "formula": formula})
     total = math.fsum(t["utility_contribution"] for t in traces)
-    graph.add("energy_utility", "Energy adjustment", "aggregation", total, "Sum of physical and mental effort cost differences.",
+    graph.add("energy_utility", "Energy adjustment", "aggregation", total, "Sum of effort-cost differences and additional mental-rest reward.",
               {t["feature_key"]: t["utility_contribution"] for t in traces}, formula="sum(energy_adjustment_i)", sources=sources)
     return total, traces

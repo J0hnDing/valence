@@ -1,11 +1,14 @@
 """Explicit, idempotent examples: python -m app.seed. Never called on startup."""
 
+import argparse
+
 from sqlalchemy import select
 
 from app.core.ontology import ONTOLOGY
 from app.db import Database
 from app.db.models import Action, Person, PersonModelVersion
 from app.schemas import ActionInput, default_model
+from app.standard_actions import standard_actions
 
 DEMO_NAME = "DEMO — engineering placeholders"
 
@@ -67,5 +70,25 @@ def seed(database_url: str | None = None):
         database.dispose()
 
 
+def seed_standard_actions(database_url: str | None = None):
+    """Add missing starter titles atomically, preserving existing actions and people."""
+    database = Database(database_url)
+    created_actions = 0
+    try:
+        with database.sessions() as session, session.begin():
+            session.connection().exec_driver_sql("BEGIN IMMEDIATE")
+            for action in standard_actions():
+                if session.scalars(select(Action.id).where(Action.title == action.title)).first() is None:
+                    session.add(Action(**action.model_dump(mode="json")))
+                    created_actions += 1
+        return {"created_actions": created_actions}
+    finally:
+        database.dispose()
+
+
 if __name__ == "__main__":
-    print(seed())
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--standard-actions", action="store_true",
+                        help="Add everyday starter actions without creating a demo person")
+    args = parser.parse_args()
+    print(seed_standard_actions() if args.standard_actions else seed())

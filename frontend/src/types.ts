@@ -39,7 +39,7 @@ export interface Result {
   feature_traces: FeatureTrace[]; aftereffect_traces: AftereffectTrace[]; graph: TraceGraph;
 }
 export interface Evaluation {
-  engine_version?: '1' | '2' | '3' | '4' | '5' | '6' | '7';
+  engine_version?: '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8';
   id: string; person_id: string; person_name: string; model_version_id: string; model_version: number;
   model_snapshot: Model | (Omit<Model, 'homeostasis'> & { homeostasis: { needs: Record<NeedKey, HistoricalNeedParameters>; mental_effort_weight: number } }); state: State; horizon_hours: number; created_at: string; results: Result[];
 }

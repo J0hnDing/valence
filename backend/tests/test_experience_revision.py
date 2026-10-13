@@ -37,7 +37,7 @@ def test_effort_rest_and_bodily_pleasure_can_coexist_with_separate_responses():
     assert tired_traces["mental_rest"] == traces["mental_rest"]
     assert tired_traces["physical_pleasure"] == traces["physical_pleasure"]
     assert tired["during_utility"] == pytest.approx(.8)
-    assert tired["energy_utility"] == pytest.approx(-.7 * (3.2 + 4.2))
+    assert tired["energy_utility"] == pytest.approx(-.7 * (3.2 + 4.2) + .7 * 1.8)
     assert rested["energy_utility"] == pytest.approx(.3 * (3.2 + 4.2))
 
 
@@ -120,7 +120,7 @@ def test_exposure_schema_upgrade_and_history_survive_restart(tmp_path):
         saved = upgraded.put(f"/api/actions/{action['id']}", json=update)
         assert saved.status_code == 200, saved.text
         history = upgraded.post("/api/evaluations", json={"person_id": person["id"], "action_ids": [action["id"]], "state": {}, "horizon_hours": 0}).json()
-        assert history["engine_version"] == "7"
+        assert history["engine_version"] == "8"
         assert history["results"][0]["during_utility"] == pytest.approx(.2)
         assert history["results"][0]["action_snapshot"]["feature_duration_minutes"] == {"mental_rest": 15}
         updated = deepcopy(update)

@@ -14,6 +14,25 @@ async function request<T>(path: string, method = 'GET', body?: unknown): Promise
   if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
 }
+
+async function exportModelVersion(personId: string, versionId: string): Promise<void> {
+  const response = await fetch(`/api/persons/${encodeURIComponent(personId)}/model-versions/${encodeURIComponent(versionId)}/export`);
+  if (!response.ok) {
+    let message = `Export failed (${response.status})`;
+    try { const error = await response.json(); if (typeof error.detail === 'string') message = error.detail; }
+    catch { /* Keep the HTTP status when there is no JSON error. */ }
+    throw new Error(message);
+  }
+  const filename = response.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1];
+  if (!filename?.endsWith('.valence.json')) throw new Error('Export response is missing its version-specific filename.');
+  const url = URL.createObjectURL(await response.blob());
+  const link = document.createElement('a');
+  link.href = url; link.download = filename;
+  document.body.append(link);
+  link.click(); link.remove();
+  // Keep the object URL alive until the browser starts the download.
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
 export const api = {
   ontology: () => request<{ features: Feature[] }>('/ontology'),
   persons: () => request<Person[]>('/persons'),
@@ -24,6 +43,7 @@ export const api = {
   deletePerson: (id: string) => request<void>(`/persons/${encodeURIComponent(id)}`, 'DELETE'),
   model: (id: string) => request<ModelVersion>(`/persons/${encodeURIComponent(id)}/model`),
   modelVersions: (id: string) => request<ModelVersion[]>(`/persons/${encodeURIComponent(id)}/model-versions`),
+  exportModelVersion,
   saveModel: (id: string, model: Model) => request<ModelVersion>(`/persons/${encodeURIComponent(id)}/model`, 'PUT', model),
   state: (id: string, date: string) => request<State>(`/daily-state?person_id=${encodeURIComponent(id)}&date=${date}`),
   saveState: (person_id: string, state: State) => request<State>('/daily-state', 'PUT', { person_id, state }),

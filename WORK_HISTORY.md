@@ -127,3 +127,29 @@ Implemented approved dynamic needs and current-state homeostasis in engine v6. A
 ### Limitations
 
 Need parameters are uncalibrated engineering defaults. Hunger/sleep, accumulation, recovery, relationship-specific state, learned parameters and richer inference are deferred in TODO-003. Historical v1-v5 evaluations remain readable and require their original engine for reproduction.
+
+## 2026-10-12 21:59 — Export personal model, and input in the eidolon atlas.
+
+- Category: feature
+- Area: ..
+
+### Summary
+
+Implemented exact selected Person Model version export as a fixed-schema UTF-8 .valence.json file and Atlas import. Atlas encrypts the full model/source snapshot, copies all five need lower/upper bounds exactly in one transaction, locks bound ranges, preserves spectra/dynamics/history, and validates without defaults, legacy conversion, coercion, or inference. Shared schema copies match. Valence backend and export/frontend checks passed; 78 focused Atlas checks, producer-consumer precision test, and isolated desktop/mobile browser import passed.
+
+### Limitations
+
+Whole-suite gates retain unrelated existing failures in Atlas motivation/End fixtures and one stale Valence Evaluation text assertion. Running Atlas requires a restart to load the new backend route if an existing process remains active.
+
+## 2026-10-12 21:37 — Add everyday starter action library
+
+- Category: feature
+- Area: Action library and optional seed
+
+### Summary
+
+Added and populated 12 editable everyday actions: eating, sleeping, League of Legends, study, walks, movies, projects, exercise, reading, cooking, chores, and friends. Added an explicit repeatable --standard-actions seed that preserves existing exact-title actions and creates no demo person, with scenario provenance and README instructions. API/starter tests passed (35 initially, final 2 starter integration tests passed after test cleanup); git diff --check passed; live API confirmed all 12 actions.
+
+### Limitations
+
+Feature values and durations are manually assigned starter assumptions; money costs default to zero. Hunger/sleep needs and subsequent energy recovery remain outside the current scoring contract. Renamed actions do not suppress recreating their original starter title.

@@ -1,0 +1,467 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Valence Person Model export v1",
+  "description": "UTF-8 .valence.json saved-version snapshot. Every field is required; no defaults or conversion. Additionally, each homeostasis need must satisfy lower <= upper, and integer numeric values must be exactly representable as IEEE-754 double precision.",
+  "type": "object",
+  "properties": {
+    "format": {
+      "const": "valence.person-model",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "type": "integer"
+    },
+    "model_contract_version": {
+      "const": "7",
+      "type": "string"
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "person_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "person_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "model_version_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "model_created_at": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "person_id",
+        "person_name",
+        "model_version_id",
+        "model_version",
+        "model_created_at"
+      ],
+      "additionalProperties": false
+    },
+    "model": {
+      "additionalProperties": false,
+      "properties": {
+        "features": {
+          "type": "object",
+          "properties": {
+            "mental_effort": {
+              "$ref": "#/$defs/Cost"
+            },
+            "mental_rest": {
+              "$ref": "#/$defs/Reward"
+            },
+            "physical_effort": {
+              "$ref": "#/$defs/Cost"
+            },
+            "physical_pleasure": {
+              "$ref": "#/$defs/Reward"
+            },
+            "stimulation_novelty": {
+              "$ref": "#/$defs/RewardOverload"
+            },
+            "learning_gain": {
+              "$ref": "#/$defs/Reward"
+            },
+            "curiosity_engagement": {
+              "$ref": "#/$defs/Reward"
+            },
+            "autonomy_control": {
+              "$ref": "#/$defs/AsymmetricSigned"
+            },
+            "competence_mastery": {
+              "$ref": "#/$defs/AsymmetricSigned"
+            },
+            "goal_progress": {
+              "$ref": "#/$defs/AsymmetricSigned"
+            },
+            "structure_planning": {
+              "$ref": "#/$defs/OrderPreference"
+            },
+            "outcome_uncertainty": {
+              "$ref": "#/$defs/OrderPreference"
+            },
+            "social_exposure": {
+              "$ref": "#/$defs/RewardOverload"
+            },
+            "relatedness_intimacy": {
+              "$ref": "#/$defs/AsymmetricSigned"
+            },
+            "belonging_acceptance": {
+              "$ref": "#/$defs/AsymmetricSigned"
+            },
+            "status_recognition": {
+              "$ref": "#/$defs/AsymmetricSigned"
+            },
+            "influence_power": {
+              "$ref": "#/$defs/AsymmetricSigned"
+            },
+            "contribution_care": {
+              "$ref": "#/$defs/AsymmetricSigned"
+            },
+            "identity_value_alignment": {
+              "$ref": "#/$defs/AsymmetricSigned"
+            }
+          },
+          "required": [
+            "mental_effort",
+            "mental_rest",
+            "physical_effort",
+            "physical_pleasure",
+            "stimulation_novelty",
+            "learning_gain",
+            "curiosity_engagement",
+            "autonomy_control",
+            "competence_mastery",
+            "goal_progress",
+            "structure_planning",
+            "outcome_uncertainty",
+            "social_exposure",
+            "relatedness_intimacy",
+            "belonging_acceptance",
+            "status_recognition",
+            "influence_power",
+            "contribution_care",
+            "identity_value_alignment"
+          ],
+          "additionalProperties": false
+        },
+        "transient": {
+          "$ref": "#/$defs/TransientParameters"
+        },
+        "aftereffects": {
+          "type": "object",
+          "properties": {
+            "accomplishment": {
+              "$ref": "#/$defs/AftereffectParameters"
+            },
+            "pride_ego": {
+              "$ref": "#/$defs/AftereffectParameters"
+            },
+            "relief": {
+              "$ref": "#/$defs/AftereffectParameters"
+            },
+            "inspiration": {
+              "$ref": "#/$defs/AftereffectParameters"
+            },
+            "guilt": {
+              "$ref": "#/$defs/AftereffectParameters"
+            },
+            "regret": {
+              "$ref": "#/$defs/AftereffectParameters"
+            },
+            "void": {
+              "$ref": "#/$defs/AftereffectParameters"
+            },
+            "fatigue": {
+              "$ref": "#/$defs/AftereffectParameters"
+            }
+          },
+          "required": [
+            "accomplishment",
+            "pride_ego",
+            "relief",
+            "inspiration",
+            "guilt",
+            "regret",
+            "void",
+            "fatigue"
+          ],
+          "additionalProperties": false
+        },
+        "resources": {
+          "$ref": "#/$defs/ResourceParameters"
+        },
+        "homeostasis": {
+          "$ref": "#/$defs/HomeostaticParameters"
+        }
+      },
+      "required": [
+        "features",
+        "transient",
+        "aftereffects",
+        "resources",
+        "homeostasis"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "format",
+    "schema_version",
+    "model_contract_version",
+    "source",
+    "model"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "AftereffectParameters": {
+      "additionalProperties": false,
+      "properties": {
+        "sensitivity": {
+          "minimum": 0,
+          "type": "number"
+        },
+        "half_life_hours": {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "sensitivity",
+        "half_life_hours"
+      ],
+      "type": "object"
+    },
+    "AsymmetricSigned": {
+      "additionalProperties": false,
+      "properties": {
+        "family": {
+          "const": "asymmetric_signed",
+          "type": "string"
+        },
+        "positive_sensitivity": {
+          "minimum": 0,
+          "type": "number"
+        },
+        "negative_sensitivity": {
+          "minimum": 0,
+          "type": "number"
+        },
+        "positive_curvature": {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        "negative_curvature": {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        }
+      },
+      "type": "object",
+      "required": [
+        "family",
+        "positive_sensitivity",
+        "negative_sensitivity",
+        "positive_curvature",
+        "negative_curvature"
+      ]
+    },
+    "Cost": {
+      "additionalProperties": false,
+      "properties": {
+        "family": {
+          "const": "cost",
+          "type": "string"
+        },
+        "cost_sensitivity": {
+          "minimum": 0,
+          "type": "number"
+        },
+        "curvature": {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        }
+      },
+      "type": "object",
+      "required": [
+        "family",
+        "cost_sensitivity",
+        "curvature"
+      ]
+    },
+    "HomeostaticParameters": {
+      "additionalProperties": false,
+      "properties": {
+        "needs": {
+          "type": "object",
+          "properties": {
+            "physical_activity": {
+              "$ref": "#/$defs/NeedParameters"
+            },
+            "mental_stimulation": {
+              "$ref": "#/$defs/NeedParameters"
+            },
+            "social_interaction": {
+              "$ref": "#/$defs/NeedParameters"
+            },
+            "close_connection": {
+              "$ref": "#/$defs/NeedParameters"
+            },
+            "goal_progression": {
+              "$ref": "#/$defs/NeedParameters"
+            }
+          },
+          "required": [
+            "physical_activity",
+            "mental_stimulation",
+            "social_interaction",
+            "close_connection",
+            "goal_progression"
+          ],
+          "additionalProperties": false
+        },
+        "mental_effort_weight": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        }
+      },
+      "type": "object",
+      "required": [
+        "needs",
+        "mental_effort_weight"
+      ]
+    },
+    "NeedParameters": {
+      "additionalProperties": false,
+      "properties": {
+        "lower": {
+          "exclusiveMaximum": 1,
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        "upper": {
+          "exclusiveMaximum": 1,
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        "sensitivity": {
+          "maximum": 64,
+          "minimum": 0,
+          "type": "number"
+        }
+      },
+      "type": "object",
+      "required": [
+        "lower",
+        "upper",
+        "sensitivity"
+      ]
+    },
+    "OrderPreference": {
+      "additionalProperties": false,
+      "properties": {
+        "family": {
+          "const": "order_preference",
+          "type": "string"
+        },
+        "preference_sensitivity": {
+          "maximum": 64,
+          "minimum": -64,
+          "type": "number"
+        }
+      },
+      "type": "object",
+      "required": [
+        "family",
+        "preference_sensitivity"
+      ]
+    },
+    "ResourceParameters": {
+      "additionalProperties": false,
+      "properties": {
+        "time_value": {
+          "minimum": 0,
+          "type": "number"
+        },
+        "money_value": {
+          "minimum": 0,
+          "type": "number"
+        }
+      },
+      "type": "object",
+      "required": [
+        "time_value",
+        "money_value"
+      ]
+    },
+    "Reward": {
+      "additionalProperties": false,
+      "properties": {
+        "family": {
+          "const": "reward",
+          "type": "string"
+        },
+        "reward_sensitivity": {
+          "minimum": 0,
+          "type": "number"
+        },
+        "curvature": {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        }
+      },
+      "type": "object",
+      "required": [
+        "family",
+        "reward_sensitivity",
+        "curvature"
+      ]
+    },
+    "RewardOverload": {
+      "additionalProperties": false,
+      "properties": {
+        "family": {
+          "const": "reward_overload",
+          "type": "string"
+        },
+        "reward_sensitivity": {
+          "minimum": 0,
+          "type": "number"
+        },
+        "overload_sensitivity": {
+          "minimum": 0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "family",
+        "reward_sensitivity",
+        "overload_sensitivity"
+      ],
+      "type": "object"
+    },
+    "TransientParameters": {
+      "additionalProperties": false,
+      "properties": {
+        "low_mental_energy_cognitive_multiplier": {
+          "maximum": 64,
+          "minimum": 0,
+          "type": "number"
+        },
+        "low_physical_energy_physical_multiplier": {
+          "maximum": 64,
+          "minimum": 0,
+          "type": "number"
+        },
+        "stress_overload_multiplier": {
+          "minimum": 0,
+          "type": "number"
+        },
+        "stress_negative_multiplier": {
+          "minimum": 0,
+          "type": "number"
+        }
+      },
+      "type": "object",
+      "required": [
+        "low_mental_energy_cognitive_multiplier",
+        "low_physical_energy_physical_multiplier",
+        "stress_overload_multiplier",
+        "stress_negative_multiplier"
+      ]
+    }
+  }
+}

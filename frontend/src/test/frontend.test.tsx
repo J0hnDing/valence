@@ -110,6 +110,25 @@ describe('Three-decimal numbers throughout the UI', () => {
 });
 
 describe('Person Model management and version browsing', () => {
+  it('exports the selected saved version despite unsaved parameter edits and surfaces export errors', async () => {
+    const latest = { ...version, id: 'model-latest', version: 2 };
+    mockAppData([person], [latest, version]);
+    const download = vi.spyOn(api, 'exportModelVersion').mockResolvedValue(undefined);
+    render(<App />);
+    await screen.findByLabelText('Person');
+    fireEvent.click(screen.getByRole('button', { name: 'Person Model' }));
+    await waitFor(() => expect(screen.getByLabelText('Model version')).toHaveValue(latest.id));
+    fireEvent.change(screen.getByLabelText('Model version'), { target: { value: version.id } });
+    fireEvent.change(screen.getByLabelText('Competence / mastery · Positive sensitivity'), { target: { value: '9' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Export selected version' }));
+    await waitFor(() => expect(download).toHaveBeenCalledWith(person.id, version.id));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Export selected version' })).toBeEnabled());
+    download.mockRejectedValue(new Error('Review the legacy model and save a new version.'));
+    fireEvent.click(screen.getByRole('button', { name: 'Export selected version' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Review the legacy model and save a new version.');
+    expect(screen.getByLabelText('Model version')).toHaveValue(version.id);
+  });
+
   it('keeps the person when deletion is cancelled or fails', async () => {
     mockAppData();
     const remove = vi.spyOn(api, 'deletePerson').mockRejectedValue(new Error('SQLite is busy'));
@@ -649,7 +668,7 @@ describe('dynamic needs and optional current state', () => {
     expect(screen.queryByRole('columnheader', { name: 'Predicted satisfaction' })).not.toBeInTheDocument();
     expect(screen.queryByRole('columnheader', { name: 'Impact' })).not.toBeInTheDocument();
     expect(screen.getAllByText('Unknown').length).toBeGreaterThanOrEqual(2);
-    expect(screen.getByText(/Need utility = current-state pressure/)).toBeVisible();
+    expect(screen.getByText(/Need utility = sensitivity × current-state pressure/)).toBeVisible();
     detail.unmount();
     render(<EvaluationPage evaluation={{ ...evaluation, engine_version: '5' }} ontology={ontology} />);
     fireEvent.click(screen.getByRole('button', { name: 'Feature & aftereffect traces' }));

@@ -1,4 +1,4 @@
-# Dynamic needs and current state (engine v7)
+# Dynamic needs and current state (engine v8)
 
 Valence evaluates actions using only the caller-provided current state. It does not
 estimate action impacts on satisfaction, satisfaction rates, or a new state. Callers
@@ -76,16 +76,33 @@ The existing transient keys `low_mental_energy_cognitive_multiplier` and
 physical energy respectively. New models default to 1, with range `[0,64]`.
 Saved alpha values are retained where in range; earlier larger values are capped
 on read-only projection and flagged for review. Original snapshots are preserved.
-Stress parameters and formulas are unchanged.
+The mental alpha now controls both mental-effort cost and mental-rest/relief
+reward. No additional Person Model field is needed; existing saved coefficients
+remain valid. Stress parameters and formulas are unchanged.
 
 ```text
 m(e) = clip(1 + alpha * (0.7 - e), 0.5, 2)
+r(e) = clip(1 + mental_alpha * (0.7 - mental_energy), 1, 2)
 energy utility = sum((m(e) - 1) * original effort contribution)
+                 + (r(e) - 1) * original mental_rest contribution
 ```
 
-Original effort contributions include their actual exposure hours. The positive
-modifier cannot reverse cost polarity. Energy produces no need reward and does
-not modify rest, pleasure, need-scoring inputs, or aftereffects.
+Original effort and mental-rest contributions include their actual exposure
+hours. Unknown energy gives modifier 1. The positive effort modifier cannot
+reverse cost polarity. The mental-rest modifier boosts the ongoing Mental rest /
+relief feature by at most 2x when mental energy is below 0.7; it never discounts
+rest at high energy. Zero mental-rest intensity or zero exposure gives no bonus.
+At mental energy 0.192 and mental alpha 2, the rest multiplier is 2.000. A base
+rest contribution of 0.250 becomes 0.500, with the additional 0.250 reported in
+energy utility. Base contributions remain unchanged in the feature table;
+energy traces and graph nodes expose the rest modifier and incremental reward.
+Backend preview curves use the effective mental-rest reward sensitivity.
+
+Energy produces no need reward and does not modify physical pleasure,
+need-scoring inputs, or aftereffects. In particular, the post-action `relief`
+aftereffect remains separate from the ongoing `mental_rest` feature; its trigger,
+amplitude, and decay are unchanged. Evaluation does not estimate recovery or
+change current energy.
 
 ```text
 base gross = ongoing + one-time + aftereffects (existing formulas, no energy)
@@ -99,8 +116,10 @@ The hourly diagnostic still excludes time cost and is undefined at zero duration
 Feature traces describe base contributions, with separate need and energy traces
 and complete graph dependencies. With unknown needs and unknown energy (or
 energy 0.7), the new layer contributes zero. This reproduces the intrinsic engine
-without energy modifications. Stored v1-v6 results stay readable under their
-recorded contracts and are not recomputed as v7. Engine v6 prediction traces remain
+without energy modifications. Stored v1-v7 results stay readable under their
+recorded contracts and are not recomputed as v8. Engine v8 reproduces v8
+snapshots; earlier evaluations require their original engine for reproduction.
+Engine v6 prediction traces remain
 historical data only. Read-only projections of v6 models discard obsolete
 satisfaction rates for current editing and scoring while preserving their original
 stored JSON. Current requests reject obsolete rate fields.
